@@ -21,26 +21,26 @@ using http_request = web::http::http_request;
 //    return ss.str();
 // }
 
-// // -- Uint types
-// template <int N> struct Uint {
-//    // -- members
-//    static constexpr int bits = N;
-//    unsigned long long val;
-//    // -- interface
-//    Uint(unsigned long long x) : val(x) { }
-//    bool operator== (const Uint& rhs) { return val == rhs.val; }
-//    bool operator!= (const Uint& rhs) { return val != rhs.val; }
-//    operator unsigned long long() { return val; }
-// };
+// -- Uint types
+template <int N> struct Uint {
+   // -- members
+   static constexpr int bits = N;
+   unsigned long long val;
+   // -- interface
+   Uint(unsigned long long x) : val(x) { }
+   bool operator== (const Uint& rhs) { return val == rhs.val; }
+   bool operator!= (const Uint& rhs) { return val != rhs.val; }
+   operator unsigned long long() { return val; }
+};
 
-// template <int N>
-//    web::json::value
-//    to_json_value(Uint<N> x) {
-//       web::json::value obj;
-//       obj[U("_bytes")] = web::json::value::number(N/8);
-//       obj[U("_value")] = web::json::value::number((double)x.val);
-//       return obj;
-//    }
+template <int N>
+   web::json::value
+   to_json_value(Uint<N> x) {
+      web::json::value obj;
+      obj[U("_bytes")] = web::json::value::number(N/8);
+      obj[U("_value")] = web::json::value::number((double)x.val);
+      return obj;
+   }
 
 
 // using Key = std::vector<std::pair<int,int>>;
@@ -483,13 +483,13 @@ using http_request = web::http::http_request;
 //    return inst_obj;
 // }
 
-// web::json::value
-// default_command() {
-//    web::json::value obj;
-//    obj[U("_value")] = web::json::value::number(0);
-//    obj[U("_bytes")] = web::json::value::number(1);
-//    return obj;
-// }
+web::json::value
+default_command() {
+   web::json::value obj;
+   obj[U("_value")] = web::json::value::number(0);
+   obj[U("_bytes")] = web::json::value::number(1);
+   return obj;
+}
 
 // web::json::value
 // default_buffer_id() {
@@ -760,9 +760,9 @@ using http_request = web::http::http_request;
 // }
 
 utility::string_t
-get_server_name(std::shared_ptr<http_client> client) {
+get_server_name(http_client& client) {
    utility::string_t name;
-   client->request(web::http::methods::GET, U("/tinynbi/switch"))
+   client.request(web::http::methods::GET, U("/tinynbi/switch"))
       .then([](web::http::http_response response) {
          if (response.status_code() == web::http::status_codes::OK)
             return response.extract_json();
