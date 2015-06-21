@@ -805,7 +805,7 @@ struct flow_gen_t {
    void send_flow() {
       utility::stringstream_t sstr;
       sstr << U("/tinynbi/switch/") << name << U("/tables/0/flows");
-      client.request(web::http::methods::POST, sstr.str(), bogus);
+      client.request(web::http::methods::POST, sstr.str(), bogus)
          .then([](web::http::http_response){})
          .wait();
    }
