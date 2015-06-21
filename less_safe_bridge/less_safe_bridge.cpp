@@ -157,8 +157,10 @@ get_src(const web::json::value& obj) {
 
 Context
 tiny_handle_packet_in(const web::json::value& obj) {
+   std::cerr << "Handling a packet in...";
    Uint<32> in_port { (unsigned long long)(obj.at(U("in_port")).at(U("_value")).as_integer()) };
    Uint<48> eth_src { get_src(obj.at("packet").at("data")) };
+   std::cerr << "    handled.\n";
    return { { in_port, 0, 0, 0 }, { eth_src, 0, 0 } };
 }
 
@@ -518,6 +520,8 @@ tiny_add_flow_mod(DataPlane__k0014_k14_k_k__ dp, int tbl_idx, FlowMod flow) {
       << U("/tinynbi/switch/") << dp.switch_name << U("/tables/") << tbl_idx
       << U("/flows");
    web::json::value f_json = to_json_value(dp, flow, tbl_idx);
+   std::cerr << "sent the flow: " << f_json.serialize() << '\n';
+   std::cerr << "to the uri: " << sstr.str() << '\n';
    try {
       dp.client->request(web::http::methods::POST, sstr.str(), f_json)
          .then([](web::http::http_response){})
@@ -619,6 +623,7 @@ void flow_removed(DataPlane__k0014_k14_k_k__&, FlowRemovedData) {
 }
 
 bool respond(DataPlane__k0014_k14_k_k__& d, Event ev) {
+   std::cerr << "Responding to an event\n";
    switch (ev.liz_tag) {
       case 0:
          {
@@ -689,6 +694,7 @@ void responder(DataPlane__k0014_k14_k_k__& d, respond_func_t respond_func) {
    bool done = false;
    listener.support(web::http::methods::POST, [&done, &d, respond_func](http_request req) {
       auto cmd = req.request_uri().path();
+      std::Cerr << "Got an exception: " << cmd << '\n';
       if (cmd == "/quit") {
          req.reply(web::http::status_codes::OK, U("terminating application"))
             .wait();
@@ -700,6 +706,7 @@ void responder(DataPlane__k0014_k14_k_k__& d, respond_func_t respond_func) {
       } else {
          req.reply(web::http::status_codes::OK);
          auto obj = extract_json_or_panic(req);
+         std::cerr << "successfully extracted a json obj: " << obj.serialize() << "\n";
          auto evt = parse_event(cmd, obj);
          respond_func(d, evt);
       }
