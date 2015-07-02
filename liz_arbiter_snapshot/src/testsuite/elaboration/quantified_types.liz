@@ -1,0 +1,15 @@
+-- Quantified types
+
+
+
+---- Existentially quantified data types ----
+-- An existential type is one of the ways parametric types are implemented. Let
+-- us consider the example of boxed types.
+define exists (t:type). B: type = t
+define b: B[|int|] = per 3
+
+-- Like with all generative types, this type comes with two isomorphisms: `rep`
+-- and `per`. Since the type is quantified, so are the isomorphisms.
+rep (per 3) == 3
+rep (per true) == true
+rep (per 2.0) == 2.0

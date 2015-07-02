@@ -1,0 +1,3 @@
+define ns: namespace =
+  ++ a description
+  define x:int = 0

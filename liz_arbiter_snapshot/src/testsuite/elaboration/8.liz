@@ -1,0 +1,2 @@
+define Hdr : type = record{ x1 : int, x : int | ( x1 == 0 ) }
+

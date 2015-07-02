@@ -1,0 +1,5 @@
+// Ticket #3, reported by Jasson Casey.
+// Options: --compile
+
+define Hdr : struct = { declare x : int ; } ;
+

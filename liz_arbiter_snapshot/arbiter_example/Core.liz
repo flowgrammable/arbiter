@@ -1,0 +1,168 @@
+-------------
+-- Context --
+-------------
+
+define Internal: type = record
+  in_port:     uint 32
+  in_phy_port: uint 32
+  tunnel_id:   uint 32
+  metadata:    uint 32
+
+
+
+define Ethernet: type = record
+  src: uint 48
+  dst: uint 48
+  typ: uint 16
+
+
+
+define Packet: type = record { eth: Ethernet }
+
+
+
+define Context: type = record
+  intl: Internal
+  pkt: Packet
+
+
+
+-- Field
+define in_port: int    = 0
+define eth_src: int    = 1
+define eth_dst: int    = 2
+define eth_type: int   = 3
+define ipv4_src: int   = 4
+define ipv4_dst: int   = 5
+define ipv4_ttl: int   = 6
+define ipv4_proto: int = 7
+define ipv6_src: int   = 8
+define ipv6_dst: int   = 9
+define ipv6_ttl: int   = 10
+define ipv6_flabel:int = 11
+define tcp_src: int    = 12
+define tcp_dst: int    = 13
+define udp_src: int    = 14
+define udp_dst: int    = 15
+define sctp_src: int   = 16
+define sctp_dst: int   = 17
+
+
+
+-- Protocols (should be const)
+define pro_int: int      = 0
+define pro_eth: int      = 1
+define pro_vlan: int     = 2
+define pro_mpls: int     = 3
+define pro_arp: int      = 4
+define pro_ipv4: int     = 5
+define pro_icmpv4: int   = 6
+define pro_ipv6: int     = 7
+define pro_icmpv6: int   = 8
+define pro_tcp: int      = 9
+define pro_sctp: int     = 10
+define pro_udp: int      = 11
+
+-- Fields
+define fld_in_port: int     = 0
+define fld_in_phy_port: int = 1
+define fld_tunnel_id: int   = 2
+define fld_metadata: int    = 3
+define fld_src: int         = 4
+define fld_dst: int         = 5
+define fld_typ: int         = 6
+define fld_pcp: int         = 7
+define fld_vid: int         = 8
+define fld_label: int       = 9
+define fld_tc: int          = 10
+define fld_bos: int         = 11
+define fld_opcode: int      = 12
+define fld_sha: int         = 13
+define fld_spa: int         = 14
+define fld_tha: int         = 15
+define fld_tpa: int         = 16
+define fld_dscp: int        = 17
+define fld_ecn: int         = 18
+define fld_proto: int       = 19
+define fld_code: int        = 20
+define fld_flabel: int      = 21
+define fld_ttl: int         = 22
+
+
+
+
+
+------------------------
+-- Port configuration --
+------------------------
+
+define out_ALL: uint 32        = 0xfffffffb
+define out_CONTROLLER: uint 32 = 0xfffffffd
+
+
+
+
+
+------------
+-- Events --
+------------
+
+-- Only output is supported by controller right now.
+define Action: type = inductive { output: (uint 32) -> Action }
+
+define get_out(a: Action): uint 32 =
+  match a with
+    case output(x) => return x
+
+define Event: type = inductive { PacketIn: (Context) -> Event }
+
+
+
+
+
+-----------
+-- Flows --
+-----------
+
+where FullConfiguration = record
+  priority: uint 16
+  hard_timeout: uint 16
+
+where FullInstructionSet = record
+  meter_id: uint 32
+  metadata: uint 64
+  apply:    Array Action
+  clear:    bool
+  write:    Array Action
+  goto_id:  uint 8
+
+define TinyDataPlane(DP: type): concept =
+  postulate get_client: (DP&) -> TinyClient
+
+
+
+
+
+---------------------
+-- Arbiter Machine --
+---------------------
+
+-- Arbiter Machine
+-- An arbiter machine is a type with associated functions:
+define ArbiterMachine(DP: type): concept =
+  TinyDataPlane(DP)
+  postulate acquire_data_path: () -> DP
+  postulate release_data_path: (DP&) -> void
+  postulate load: (DP&) -> void
+  postulate unload: (DP&) -> void
+  postulate respond: (DP&, Event) -> void
+
+
+-- Primary Arbiter loop
+define forall(D:type). ArbiterMachine(D), exec_arbiter(): int =
+  define dp: D = acquire_data_path()
+  load(dp)
+  tiny_responder[|D&,Event|](dp, respond)
+  unload(dp)
+  release_data_path(dp)
+  return 0

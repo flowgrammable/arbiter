@@ -1,0 +1,1 @@
+define arity(f: Function) : int = Arity f

@@ -1,0 +1,11 @@
+-- A new type of integer
+define Z:type = int
+
+-- Overload for addition and negation
+define (a:Z) + (b:Z):Z = per (rep a + rep b)
+define -(a:Z):Z = per (-(rep a))
+
+-- Test the application of the operators
+define n:Z = per 2
+print (rep (n + n))
+print (rep (-n))

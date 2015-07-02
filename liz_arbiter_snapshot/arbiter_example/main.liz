@@ -1,0 +1,91 @@
+-- import "/home/michael/projects/liz/Arbiter2/main.liz"
+
+import "Liz/Basic/DataType.liz"
+
+import "Core.liz"
+import "Interface.liz"
+
+------------
+-- Bridge --
+------------
+
+define k0: Key = key[[pro_int,fld_in_phy_port],[pro_eth, fld_src]]
+define k1: Key = key[[pro_eth, fld_src]]
+
+where Bridge = DataPath(k0,k1)
+
+define get_bridge_client(b: Bridge): TinyClient = get_client(b)
+
+
+
+
+----------------------------
+-- Ethernet Bridge config --
+----------------------------
+
+define get_in_port(ctx: Context): uint(32) =
+  return (rep ((rep ctx).intl)).in_port
+
+define get_eth_src(ctx: Context): uint(48) =
+  return (rep ((rep ((rep ctx).pkt)).eth)).src
+
+-- Send a packet to a controller and table 1
+define to_controller: record { apply: Array Action, goto_id: uint 8 } =
+  [ singleton(output(out_CONTROLLER)), 1 ]
+
+-- Send a packet to all ports
+define flood: record { apply: Array Action } =
+  [ singleton(output(out_ALL)) ]
+
+define learn_config: FullConfiguration = [ 60, 100 ]
+
+define learn_miss(d: DataPath(k0,k1)&, ctx: Context): void =
+  -- Add a learn flow
+  define ms0: MatchSet(k0) = [ get_in_port(ctx), get_eth_src(ctx) ]
+  define i0: record{ goto_id: uint(8) } = [ 1 ]
+  add_flow0(d, ms0, learn_config, i0)
+  -- Add a forward flow
+  define ms1: MatchSet(k1) = [ get_eth_src(ctx) ]
+  define i1: record{ apply: Array(Action) } =
+    [ singleton(output(get_in_port(ctx))) ]
+  add_flow1(d, ms1, learn_config, i1)
+
+-- Flows that handle misses have lowest priority and don't expire
+define miss_config: FullConfiguration = [ 0, 0xffff ]
+
+
+
+
+
+---------------------
+-- Arbiter Machine --
+---------------------
+
+-- define get_client(b: Bridge&): TinyClient = get_client[|k0,k1|](b)
+
+-- define acquire_data_path(): Bridge = acquire_data_path[|k0,k1|]()
+
+-- define release_data_path(b: Bridge&): void = release_data_path[|k0,k1|](b)
+
+define load(b: Bridge&): void =
+  add_miss0(b, miss_config, to_controller)
+  add_miss1(b, miss_config, flood)
+
+define unload(b: Bridge&): void = return
+
+define respond(b: Bridge&, evt: Event): void =
+  match evt with
+    case PacketIn(ctx) => learn_miss(b,ctx)
+  
+
+
+
+
+
+-------------
+-- Program --
+-------------
+
+define main(): int =
+  exec_arbiter[|Bridge|]()
+  return 0

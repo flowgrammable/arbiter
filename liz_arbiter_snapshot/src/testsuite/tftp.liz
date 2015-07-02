@@ -1,0 +1,53 @@
+define TFTP : namespace = {
+   
+rule String : typename = list( bits(8) );
+
+define NullTail( str : const String& ) : bool = {
+   return str.tail == '\0' ;
+}
+
+rule NullTermString : typename = list( bits(8), NullTail ) ;
+
+define Rrq : struct = {
+   declare filename : NullTermString ;
+   declare mode : NullTermString ;
+}
+
+rule Wrq : typename = Rrq ;
+
+define LE512( lst : const list( uint(8) )& ) : bool = {
+   return lst.bytes <= 512 ;
+}
+
+define Data : struct = {
+   declare blockid : bits( 16 ) ;
+   declare data : list( bits(8) ) | LE512 ;
+}
+
+define Ack : struct = {
+   declare blockid : bits( 16 ) ;
+}
+
+define Error : struct = {
+   declare code : bits( 16 ) ;
+   declare msg : NullTermString ;
+}
+
+define Payload : variant = {
+   define rrq   : tag(Rrq)   = 1 ;
+   define wrq   : tag(Wrq)   = 2 ;
+   define data  : tag(Data)  = 3 ;
+   define ack   : tag(Data)  = 4;
+   define error : tag(Error) = 5;
+}
+
+define ValidOC( oc : bits( 16 ) ) : bool = {
+   return member( oc, Domain( Payload ) ) ;
+}
+
+define Packet : struct = {
+   declare opcode  : bits( 16 ) | ValidOC ;
+   declare payload : Payload( opcode ) ;
+}
+
+}

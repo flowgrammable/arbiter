@@ -1,0 +1,154 @@
+import "Liz/Flow/Packet.liz"
+import "Liz/Flow/Dataplane.liz"
+import "Liz/Flow/Pipeline.liz"
+
+--------------------
+--| Test Packets |--
+--------------------
+
+define mk_pkt1(): PacketData =
+  define eth_dat: EthernetData = per [ per 11, per 0, unknown ]
+  define ipv6_dat: IPL = ipv6(per [ unknown, unknown, unknown, unknown])
+  define pkt: Packet = per [ eth_dat, ipv6_dat, TCP(unknown, unknown) ]
+  return per [ pkt, per [ 2, unknown ] ]
+
+define mk_pkt2(): PacketData =
+  define eth_dat: EthernetData = per [ per 22, per 0, unknown ]
+  define ipv6_dat: IPL = ipv6(per [ unknown, unknown, unknown, unknown])
+  define pkt: Packet = per [ eth_dat, ipv6_dat, TCP(unknown, unknown) ]
+  return per [ pkt, per [ 3, unknown ] ]
+
+define pkt1: PacketData = mk_pkt1()
+define pkt2: PacketData = mk_pkt2()
+
+
+
+-------------------------------
+--| Build a learning bridge |--
+-------------------------------
+
+
+
+--| Data plane |--
+
+define learn_miss_event: int    = 0
+define learn_table_index: int   = 0
+define forward_miss_event: int  = 1
+define forward_table_index: int = 1
+
+define mk_learn_miss_inst(): InstructionSet =
+  define miss_inst: Array Instruction = mk_array[|Instruction|](1)
+  set(miss_inst, 0, Output(to_ctrl(learn_miss_event)))
+  define m_app: Maybe ApplyInst = some((per miss_inst)@ApplyInst)
+  return per [ unknown, m_app, false, none, none, none ]
+
+-- The learning is empty, but has an interesting miss instruction.
+-- When a miss occurs, send an event with the packet to the control panel?
+define mk_learn_tbl(): Table =
+  return per [ mk_array[|Flow|](0), mk_learn_miss_inst() ]
+
+define mk_forward_table(): Table =
+  define miss_inst: Array Instruction = mk_array[|Instruction|](1)
+  set(miss_inst, 0, Output(to_ctrl(forward_miss_event)))
+  define m_app: Maybe ApplyInst = some((per miss_inst)@ApplyInst)
+  define insts: InstructionSet = per [ unknown, m_app, false, none, none, none ]
+  return per [ mk_array[|Flow|](0), insts ]
+
+define mk_learning_bridge(): Dataplane =
+  define learn_tbl: Table = mk_learn_tbl()
+  define forward_tbl: Table = mk_forward_table()
+  define dp: Array Table = mk_array[|Table|](2)
+  set(dp, 0, learn_tbl)
+  set(dp, 1, forward_tbl)
+  return per dp
+
+
+
+--| Controlplane |--
+
+-- FIXME: Should be const. Bugfix needed. 
+define goto_forward_insts: InstructionSet =
+  per [ unknown, none, false, none, none, some(per 1) ]
+
+define get_learn_table(dp: Dataplane): Table = get(rep dp, learn_table_index)
+define get_forward_table(dp: Dataplane): Table =
+  get(rep dp, forward_table_index)
+
+define flow_matches_port(flow: Flow, port: int): bool =
+  define m:Match = get((rep flow).match_set, 0)
+  if (rep m).protocol == Protocol_internal then
+    define fm: FieldMatch = get((rep m).field_matches,0)
+    if (rep fm).name == FieldName_in_port then
+      match (rep fm).classifier with
+        case Wildcard =>      return false
+        case Literal(n) =>    return n == port
+        case PrefixMask(n) => return false
+        case Mask(n) =>       return false
+    else
+      return false
+  else
+    return false
+
+define port_never_seen(dp: Dataplane, port: int): bool =
+  define learn_tbl: Array Flow = (rep get((rep dp),0)).entries
+  define n: int = size[|Flow|](learn_tbl)
+  define i: int = 0
+  while i != n repeat
+    if flow_matches_port(learn_tbl, port) then
+      return false
+  return true
+
+define make_port_match(port:int): Match =
+  define fms: Array FieldMatch = mk_array[|FieldMatch|](1)
+  set(fms, 0, per [ FieldName_in_port, Literal(port) ])
+  return per [ Protocol_internal, fms ]
+
+define make_eth_dst_match(eth_dst:int): Match =
+  define fms: Array FieldMatch = mk_array[|FieldMatch|](1)
+  set(fms, 0, per [ FieldName_dst, Literal(eth_dst) ])
+  return per [ Protocol_ethernet, fms ]
+
+define make_port_dst_match(port:int, eth_dst: int): Match =
+  define ms: Array Match = mk_array[|Match|](2)
+  set(ms, 0, make_port_match(port))
+  set(ms, 1, make_eth_dst_match(eth_dst))
+  return ms
+
+define associate_learn_table(learn: Table, port: int, eth_dst: int): Table =
+  define ms: Array Match = make_port_dst_match(port, eth_dst)
+  define inst: InstructionSet = goto_forward_insts
+  define flow: Flow = per [ ms, inst ]
+  define new_flows: Array Flow = cons(flow, (rep get((rep dp),0)).entries)
+  return per [ new_flows, mk_learn_miss_inst() ]
+
+-- define associate_forward_table(forward: Table)
+
+-- FIXME: This doesn't update the forward table!
+define learn_association(dp: ref Dataplane, port: int, eth_dst: int): void =
+  define new_learn: Table = associate_learn_table(get_learn_table(dp), port, eth_dst)
+  define new_forward: Array Table = associate_forward_table(get_learn_table(dp), port, eth_dst)
+  define new_tbls: Array Table = mk_array[|Array|](2)
+  set(new_tbls, learn_table_index, new_learn)
+  set(new_tbls, forward_table_index, new_forward)
+  dp := per new_tbls
+
+define handle_learn_miss(dp: ref Dataplane, pkt: PacketData): PacketOut =
+  define port: int = get_port(pkt)
+  define eth_dst: int = get_eth_dest(pkt)
+  if port_never_seen(dp, port) then
+    learn_association(dp, port, eth_dst)
+    return to_all((rep pkt).packet)
+  if port_source_mismatch(dp, port, eth_dst) then
+    update_association(dp, port, eth_dst)
+    return to_all((rep pkt).packet)
+  return drop  -- Should never happen
+
+define handle_forward_miss(dp: ref Dataplane, pkt: PacketData): PacketOut = drop
+
+-- Control plane for a learning bridge
+define learn(dp: ref Dataplane, pkt: PacketData, n: int): PacketOut =
+  if n == learn_miss_event then
+    return handle_learn_miss(dp, pkt)
+  if n == forward_miss_event then
+    return handle_forward_miss(dp)
+  return drop     -- Never happens. Well, it could, but shouldn't.

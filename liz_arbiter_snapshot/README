@@ -1,0 +1,41 @@
+This is Liz, an interpreter for a C++ dialect inspired by the book
+"Elements of Programming" authored by Alexander Stepanov and Paul McJones.
+Liz is designed to provide direct support for axiomatic programming
+and structured generic programming.
+
+Liz is a research compiler for studying Axiomatic Programming.  It
+is being developed at Texas A&M University by the research group of
+Dr. Gabriel Dos Reis.  
+
+The source code is in the src/ subdirectory, with the following
+overview:
+
+  * src/Token.H and src/Token.C define the lexical analysizer.
+
+  * src/Ast.H and src/Ast.C define the abstract syntax tree
+    data structures used by the parser.
+
+  * src/Parser.H and src/Parser.C define the parser for the language
+    accepted by Liz.  It is recursive descent, exploiting parser
+    combinators to reduce clutter.
+
+  * src/Elaborator.H defines the bulk of datatypes needed for
+    type checking and translating Liz programs into an internal
+    representation suitable for interpretation.
+
+  * src/Type.C contains implementions of Liz types representations.
+
+  * src/expressions.C contains implementations of the intermediate
+    representation.
+
+  * src/elaboration.C contains implementations of the type checker
+    and intermediate code generator.
+
+  * src/Evaluator.H and src/Evaluator.C define the Liz evaluator.
+
+  * src/intrinsics.C implement Liz builtin operations.
+
+  * src/utility.H and src/utility.C provides some utility functions.
+
+
+

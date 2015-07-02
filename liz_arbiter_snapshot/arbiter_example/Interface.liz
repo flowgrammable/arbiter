@@ -1,0 +1,84 @@
+import "Core.liz"
+
+
+----------------------
+-- Flow constraints --
+----------------------
+
+define InstructionSet(I: type): concept = ProjectionOf(I, FullInstructionSet)
+define Configuration(C: type): concept = ProjectionOf(C, FullConfiguration)
+
+define KeyProfile0(k: Key): concept =
+  SubKey(k, key[[pro_int,fld_in_phy_port],[pro_eth,fld_src]])
+  ValidKey(k)
+
+define InstructionProfile0(I: type): concept =
+  InstructionSet(I)
+  ProjectionOf(I, record{ apply: Array(Action), goto_id: uint(8) })
+
+define Profile0(k: Key, I: type): concept =
+  KeyProfile0(k)
+  InstructionProfile0(I)
+
+define KeyProfile1(k: Key): concept =
+  SubKey(k, key[[pro_int,fld_in_phy_port],[pro_eth,fld_src]])
+  ValidKey(k)
+
+define InstructionProfile1(I: type): concept =
+  InstructionSet(I)
+  ProjectionOf(I, record{ apply: Array(Action), goto_id: uint(8) })
+
+define Profile1(k: Key, I: type): concept =
+  KeyProfile1(k)
+  InstructionProfile1(I)
+
+
+
+
+
+---------------
+-- Data path --
+---------------
+
+define DataPath(k0: Key, k1: Key): type = record { client: TinyClient }
+
+-- Fix this!!!
+define forall(k0: Key, k1: Key),
+get_client(d: DataPath(k0, k1)&): TinyClient = (rep d).client
+
+define forall(k0: Key, k1: Key), acquire_data_path(): DataPath(k0,k1) =
+  per[|k0,k1|]([tiny_acquire_client()])
+
+define forall(k0: Key, k1: Key), release_data_path(d:DataPath(k0,k1)&): void =
+  return
+
+
+
+---------------
+-- Add flows --
+---------------
+
+define forall(k0: Key, k1: Key, M:type, C: type, I: type).
+  Profile0(k0, I) and Configuration(C),
+add_flow0(d: DataPath(k0, k1)&, m: M, c: C, i: I): void =
+  define flow: TinyFlowMod = tiny_make_flow_mod(m, c, i)
+  tiny_add_flow(get_client(d), 0, flow)
+
+
+define forall(k0: Key, k1: Key, M:type, C: type, I: type).
+  Profile1(k1, I) and Configuration(C),
+add_flow1(d: DataPath(k0, k1)&, m: M, c: C, i: I): void =
+  define flow: TinyFlowMod = tiny_make_flow_mod(m, c, i)
+  tiny_add_flow(get_client(d), 1, flow)
+
+define forall(k0: Key, k1: Key, C: type, I: type).
+  Profile0(k0, I) and Configuration(C),
+add_miss0(d: DataPath(k0, k1)&, c: C, i: I): void =
+  define flow: TinyFlowMod = tiny_make_flow_mod([ ], c, i)
+  tiny_add_flow(get_client(d), 0, flow)
+
+define forall(k0: Key, k1: Key, C: type, I: type).
+  Profile1(k1, I) and Configuration(C),
+add_miss1(d: DataPath(k0, k1)&, c: C, i: I): void =
+  define flow: TinyFlowMod = tiny_make_flow_mod([ ], c, i)
+  tiny_add_flow(get_client(d), 1, flow)

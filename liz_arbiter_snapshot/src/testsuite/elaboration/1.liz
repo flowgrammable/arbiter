@@ -1,0 +1,4 @@
+// Ticket #1, contributed by Jasson Casey.
+// Elaborate empty structure.
+
+define S : struct = { }

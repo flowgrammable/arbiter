@@ -1,0 +1,163 @@
+-- import "/home/michael/repos/liz/src/testsuite/flow/learning_bridge.liz"
+
+import "Liz/Flow/Packet.liz"
+import "Liz/Flow/DataPlane.liz"
+import "Liz/Flow/Pipeline.liz"
+
+--------------------
+--| Test Packets |--
+--------------------
+
+-- Make a dummy packet by only specifying the ethernet destination
+define mk_eth_pkt(src: int, dst: int): Packet =
+  define eth_dat: EthernetData = per [ per 0, per dst, unknown ]
+  define ipl: IPL = ipv6(per [ unknown, unknown, unknown, unknown ])
+  define tpl: TPL = TCP(unknown, unknown)
+  return per [ eth_dat, ipl, tpl ]
+
+-- Trace packets that only trigger learning bridge
+define mk_learning_trace(): Array TracePacket =
+  define pkts: Array TracePacket = mk_array 12
+  set(pkts,  0, per [ mk_eth_pkt(0,0),   per 0, 3 ])
+  set(pkts,  1, per [ mk_eth_pkt(0,0),  per 25, 3 ])
+  set(pkts,  2, per [ mk_eth_pkt(0,0),  per 50, 3 ])
+  set(pkts,  3, per [ mk_eth_pkt(0,0),  per 75, 3 ])
+  set(pkts,  4, per [ mk_eth_pkt(0,0), per 100, 3 ])
+  set(pkts,  5, per [ mk_eth_pkt(0,0), per 125, 3 ])
+  set(pkts,  6, per [ mk_eth_pkt(0,0), per 150, 3 ])
+  set(pkts,  7, per [ mk_eth_pkt(0,0), per 175, 3 ])
+  set(pkts,  8, per [ mk_eth_pkt(0,0), per 200, 3 ])
+  set(pkts,  9, per [ mk_eth_pkt(0,0), per 225, 3 ])
+  set(pkts, 10, per [ mk_eth_pkt(0,0), per 250, 3 ])
+  set(pkts, 11, per [ mk_eth_pkt(0,0), per 275, 3 ])
+
+
+
+----------------------------------
+--| Leanring Bridge Data plane |--
+----------------------------------
+-- A learning bridge associates port number and ethernet destinations. It is
+-- composed of 2 tables:
+--  learn table:
+--    The learn table remembers the association of port/dest pairs. Any packet
+--    that violates this is written out to all ports and sent to the control
+--    plane for processing. If a packet has been seen, it is selected to be
+--    processed by the forward table.
+--  forward table:
+--    If a packet makes it to the forward table, then the port is matched to a
+--    flow entry. The flow entry contains the port on which the packet will be
+--    sent.
+
+define learn_miss_event: int    = 0
+define learn_table_index: int   = 0
+define forward_miss_event: int  = 1
+define forward_table_index: int = 1
+
+define mk_learn_tbl(): Table =
+  define learn_inst: ApplyInst =
+    per singleton(Output(to_ctrl(learn_miss_event)))
+  define miss_inst : InstructionSet =
+    per [ none, some learn_inst, per false, none, none, none ]
+  return per [ mk_array 0, miss_inst ]
+
+define mk_forward_table(): Table =
+  define fwd_inst: ApplyInst =
+    per singleton(Output(to_ctrl(forward_miss_event)))
+  define miss_inst : InstructionSet =
+    per [ none, some fwd_inst, per false, none, none, none ]
+  return per [ mk_array 0, miss_inst ]
+
+define mk_learning_bridge(num_ports: int): DataPlane =
+  define learn_tbl: Table = mk_learn_tbl()
+  define forward_tbl: Table = mk_forward_table()
+  define tbls: Array Table = mk_array 2
+  set(tbls, 0, learn_tbl)
+  set(tbls, 1, forward_tbl)
+  return per [ tbls, num_ports ]
+
+
+--------------------
+--| Controlplane |--
+--------------------
+-- Control plane ONLY updates the tables.
+-- FIXME: How are destructors to be implemented? How does the controller know
+--        when an entry is destructed? A PacketIn?
+
+--|-- FIXME: Need a control plane DSL.
+define mk_port_match(in_port:int): Match =
+  define fld_match: FieldMatch = per [ FieldName_in_port, Exact(in_port) ]
+  return per [ Protocol_internal, singleton fld_match ]
+
+define mk_eth_src_match(eth_src:int): Match =
+  define fld_match: FieldMatch = per [ FieldName_src, Exact(eth_src) ]
+  return per [ Protocol_ethernet, singleton fld_match ]
+
+define goto_forward_insts(): InstructionSet =
+  define goto: Maybe GotoInst = some(per(forward_table_index)@GotoInst)
+  return per [ none, none, per false, none, none, goto ]
+
+define mk_learn_entry(in_port: int, eth_src: int): Flow =
+  define entries: Array Match = mk_array 2
+  set(entries, 0, mk_port_match in_port)
+  set(entries, 1, mk_eth_src_match eth_src)
+  return per [ entries, goto_forward_insts() ]
+
+define mk_fwd_match(eth_dst: int): Match =
+  define fms: Array FieldMatch = singleton(per[ FieldName_dst, Exact(eth_dst) ])
+  return per [ Protocol_ethernet, fms ]
+
+define mk_forward_entry(in_port: int, eth_dst: int): Flow =
+  define entries: Array Match = singleton mk_fwd_match(in_port)
+  define out_to_port: ApplyInst = per singleton(Output(to_port(in_port)))
+  define inst: InstructionSet = per [ none, some out_to_port, per false, none, none, none ]
+  return per [ entries, inst ]
+
+define cons_entry(table: Table, flow: Flow): Table =
+  define entries: Array Flow = cons_back(flow, (rep table).entries)
+  define miss_inst: InstructionSet = (rep table).miss_inst
+  return per [ entries, miss_inst]
+
+define insert_entries(dp: DataPlane, lrn: Flow, fwd: Flow): Array Table =
+  define learn_tbl: Table =
+    cons_entry(get((rep dp).tables, learn_table_index), lrn)
+  define fwd_tbl: Table =
+    cons_entry(get((rep dp).tables, forward_table_index), fwd)
+  define tbls: Array Table = mk_array 2
+  set(tbls, learn_table_index, learn_tbl)
+  set(tbls, forward_table_index, fwd_tbl)
+  return tbls
+
+define update_tables(dp: ref DataPlane, in_port: int, eth_src: int, eth_dst: int): void =
+  define learn_tbl: Table = get((rep dp).tables, learn_table_index)
+  define new_learn: Flow = mk_learn_entry(in_port, eth_src)
+  define forward_tbl: Table = get((rep dp).tables, forward_table_index)
+  define new_forward: Flow = mk_forward_entry(in_port, eth_dst)
+  return per [ insert_entries(dp, new_learn, new_forward), (rep dp).num_ports ]
+
+--|-- learn miss
+define handle_learn_miss(dp: ref DataPlane, ctx: Context): Array Context =
+  define in_port: int = get_port ctx
+  -- FIXME: Why aren't these MACAddr?
+  define eth_src: int = get_eth_src ctx
+  define eth_dst: int = get_eth_dst ctx
+  update_tables(dp, in_port, eth_src, eth_dst)
+  return singleton ctx
+
+
+
+--|-- forward miss
+-- Wha... Nothing.
+define handle_forward_miss(dp: ref DataPlane, ctx: Context): Array Context =
+  return singleton(ctx)
+
+
+-- Learning bridge control plane
+define learning_bridge(dp: ref DataPlane, cctx: PacketIn): Array Context =
+  define event: int = (rep cctx).event
+  define ctx: Context = (rep cctx). ctx
+  -- When a table naming becomes an enum, we will be fine.
+  if event == learn_miss_event then
+    return handle_learn_miss(dp, ctx)
+  if event == forward_miss_event then
+    return handle_forward_miss(dp, ctx)
+  return mk_array 0  -- Never happens. How can I make this static?

@@ -1,0 +1,49 @@
+## Copyright (C) 2013 Gabriel Dos Reis.
+## All rights reserved.
+## Autoconf template file for the benefit of QMake 
+## Written by Gabriel Dos Reis.
+
+LIZ_LIB = -L@top_builddir@/src/ -lliz
+
+## We build in release mode.
+CONFIG += release
+## But, don't think we want an app bundle, yet.
+## And don't be obnoxious with GCC and -Xarch_x86_64 flag.
+macx {
+  CONFIG -= app_bundle
+  QMAKE_CFLAGS_X86_64 -= -Xarch_x86_64
+  QMAKE_CXXFLAGS_X86_64 -= -Xarch_x86_64
+  QMAKE_LFLAGS_X86_64 -= -Xarch_x86_64
+}
+
+## We are building a GUI application.
+TEMPLATE = app
+
+## Put the executable directly in the staged bin directory.
+# DESTDIR = @top_builddir@
+TARGET = liz-ide
+
+## Tell QT that sources are not in the build directory
+VPATH += @srcdir@
+
+## Our headers
+HEADERS += Editor.H Outlet.H MainWindow.H
+INCLUDEPATH += @top_srcdir@/src
+INCLUDEPATH += @top_srcdir@/src/syntax
+INCLUDEPATH += @top_srcdir@/src/semantics
+INCLUDEPATH += @top_srcdir@/src/meta
+INCLUDEPATH += @top_srcdir@/src/overseer
+INCLUDEPATH += @top_builddir@/include
+DEPENDPATH += @srcdir@
+
+## Source files
+SOURCES += Editor.C Outlet.C MainWindow.C main.cc
+
+## Additional support libraries
+LIBS += $$LIZ_LIB
+
+## C++ compiler and linker
+QMAKE_CC = @CC@
+QMAKE_CXX = @CXX@
+QMAKE_LINK = @CXX@
+QMAKE_CXXFLAGS += -std=c++11

@@ -1,0 +1,4 @@
+// Ticket #4; reported by Jasson Casey.
+// Options: --compile
+
+define Hdr : struct = { define x : int = 0; }

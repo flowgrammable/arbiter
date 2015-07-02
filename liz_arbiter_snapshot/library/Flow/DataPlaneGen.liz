@@ -1,0 +1,180 @@
+-- Copyright (C) 2013, Texas A&M University
+-- Copyright (C) 2014, Gabriel Dos Reis.
+-- All rights reserved.
+-- Written by Michael Lopez.
+--
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are
+-- met:
+--
+--     - Redistributions of source code must retain the above copyright
+--       notice, this list of conditions and the following disclaimer.
+--
+--     - Redistributions in binary form must reproduce the above copyright
+--       notice, this list of conditions and the following disclaimer in
+--       the documentation and/or other materials provided with the
+--       distribution.
+--
+--     - Neither the name of Liz, nor the names of its contributors may
+--       be used to endorse or promote products derived from this software
+--       without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+-- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+-- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+-- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+-- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+-- This file defines the Table abstraction.
+--   A Table is a type is a representation of an arbitrary Dataplane.
+
+import "Liz/Basic/DataType.liz"
+
+
+
+-- Different protocols supported by the 
+define Protocol: type = int
+define Protocol_internal: Protocol = per 0
+define Protocol_ethernet: Protocol = per 1
+define Protocol_vlan: Protocol     = per 2
+define Protocol_mpls: Protocol     = per 3
+define Protocol_arp: Protocol      = per 4
+define Protocol_ipv4: Protocol     = per 5
+define Protocol_icmpv4: Protocol   = per 6
+define Protocol_ipv6: Protocol     = per 7
+define Protocol_icmpv6: Protocol   = per 8
+define Protocol_tcp: Protocol      = per 9
+define Protocol_sctp: Protocol     = per 10
+define Protocol_udp: Protocol      = per 11
+define (a:Protocol) == (b: Protocol): bool = (rep a) == (rep b)
+define (a:Protocol) != (b: Protocol): bool = (rep a) != (rep b)
+
+-- Name of fields
+define FieldName: type = int
+define FieldName_in_port: FieldName     = per 0
+define FieldName_in_phy_port: FieldName = per 1
+define FieldName_tunnel_id: FieldName   = per 2
+define FieldName_metadata: FieldName    = per 3
+define FieldName_src: FieldName         = per 4
+define FieldName_dst: FieldName         = per 5
+define FieldName_typ: FieldName         = per 6
+define FieldName_pcp: FieldName         = per 7
+define FieldName_vid: FieldName         = per 8
+define FieldName_label: FieldName       = per 9
+define FieldName_tc: FieldName          = per 10
+define FieldName_bos: FieldName         = per 11
+define FieldName_opcode: FieldName      = per 12
+define FieldName_sha: FieldName         = per 13
+define FieldName_spa: FieldName         = per 14
+define FieldName_tha: FieldName         = per 15
+define FieldName_tpa: FieldName         = per 16
+define FieldName_dscp: FieldName        = per 17
+define FieldName_ecn: FieldName         = per 18
+define FieldName_proto: FieldName       = per 19
+define FieldName_code: FieldName        = per 20
+define FieldName_flabel: FieldName      = per 21
+define (a:FieldName) == (b: FieldName): bool = rep a == rep b
+define (a:FieldName) != (b: FieldName): bool = rep a != rep b
+
+
+
+-- There are 4 classifiers
+define MatchSort: type = inductive
+  Wildcard:   MatchSort              -- Implented as a zero bit string
+  Exact:      (int) -> MatchSort     -- Exact match
+  PrefixMask: (int) -> MatchSort     -- leading 1's, then leading zeros
+  Mask:       (int) -> MatchSort     -- apply generic mask
+
+-- A FieldMatch
+define FieldMatch: type = record
+  name:  FieldName
+  value: MatchSort
+
+-- A match defines a predicate on a packet.
+--    In the DSL protocol(fieldmatch_1, ..., fieldmatch_n)
+--    field match is not a sequence in general.
+-- Go through the exercise of trying to stuff a Match into a row
+-- Constraint:
+define Match: type = record
+  protocol:      Protocol
+  field_matches: Array FieldMatch
+
+--  Todo: Eliminate all FIXMEs
+--    put instructions into Flow data type
+
+-- define Action: type = inductive { Set: Action }
+
+-- define Instruction: type = inductive { Write: (Protocol, FieldName, Action, Unknown) -> Instruction }
+
+define OutDest: type = inductive
+  to_all:  OutDest
+  to_port: (int) -> OutDest
+  to_ctrl: (int) -> OutDest
+
+define Instruction: type = inductive { Output: (OutDest) -> Instruction }
+
+-- Instructions
+define MeterInst: type = inductive { UNIMPLEMENTED: MeterInst }
+define ApplyInst: type = Array Instruction
+define ClearInst: type = bool
+define WriteInst: type = Array Instruction
+-- What is a mask?
+define MetadataInst: type = inductive { UNIMPLEMENTED: ClearInst }
+define GotoInst: type = int  -- This is restricted by table length
+
+-- An instruction set
+-- FIXME: What is the difference between a write and apply?
+--        It has to do with the ordering of the instruction sets and so on.
+define InstructionSet: type = record
+  meter:    Maybe MeterInst
+  apply:    Maybe ApplyInst
+  clear:    ClearInst
+  write:    Maybe WriteInst
+  metadata: Maybe MetadataInst
+  goto:     Maybe GotoInst
+
+-- Helpful constant
+define mk_null_instruction_set (): InstructionSet =
+  return per [ none, none, per false, none, none, none ]
+
+-- A flow is a flow entry
+-- The match set is NOT arbitrarily sized when
+define Flow: type = record
+  match_set: Array Match
+  instruction_set: InstructionSet
+
+--  A table is fixed by:
+--    table width
+--    length
+--    match type
+
+-- Table Abstraction
+-- define Table(size: int, width:int): type =
+--   FixedArray(Flow(width), size)
+define Table: type = record
+  entries:   Array Flow
+  miss_inst: InstructionSet
+
+
+
+-- Dataplane abstraction si quantified over:
+define DataPlane: type = record
+  tables:    Array Table
+  num_ports: int
+-- define DataPlane(num_tables:int, table_size:int, width:int): type =
+--   FixedArray(Table(table_size, width), num_tables)
+
+
+
+-- Gotos can only forward
+-- Tables shold be named 
+-- Types terms and constraints for openflow
+-- Enums as. 
+

@@ -1,0 +1,10 @@
+-- Test for Ticket #6?
+
+define Z:type = int
+define x: Z = per 1
+
+define (a:Z) + (b:Z): Z = per(rep a + rep b)
+define -(a:Z):Z = per(-(rep a))
+
+x + x
+-x

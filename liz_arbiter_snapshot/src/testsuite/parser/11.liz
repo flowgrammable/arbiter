@@ -1,0 +1,7 @@
+define Node : type = record
+   val   : int
+   left  : ref Node
+   right : ref Node
+
+
+define bintree : type = record { v : int, l : ref bintree, r : ref bintree }

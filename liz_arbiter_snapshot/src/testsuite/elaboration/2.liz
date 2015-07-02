@@ -1,0 +1,5 @@
+// Ticket #2, reported by Jasson Casey.
+// return statement at non-function definition scope.
+
+define main : int = { return 0; }
+

@@ -1,0 +1,4705 @@
+2014-10-23  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/meta/Evaluator.C (evaluate): Overloaded for Namespaces.
+	(EvaluationVisitor): Updated. Now recognizes Namespaces.
+
+2014-10-06  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/testsuite/elaboration/64.liz: New. Test for Ticket #64.
+
+2014-09-23  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/testsuite/elaboration/63.liz: New. Test for Ticket #63.
+
+2014-09-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Token.H (TokenStream::remove): Remove.
+	* src/syntax/Token.C (TokenStream::remove): Likewise.
+
+2014-08-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* configure.ac: Fix subdir-objects issue.
+	Require at least C++11.  Remove check for alignof operator.
+	Remove check for standard sized integer types.
+	* src/cli/driver.C: Recognize --debug=matching.
+	* src/meta/Evaluator.C: Subtitute into QuantifiedType and read of
+	type variable formals.
+	* src/semantics/Expression.H (SubstExpr): New.
+	* src/semantics/Expression.C: Implement.
+	* src/semantics/elaboration.C: Support debugging matching problems.
+
+2014-07-01  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/testsuite/evaluator/38.liz: Moved.
+
+2014-06-30  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/testsuite/evaluator/61.liz: New. Text for Ticket #61.
+
+2014-06-27  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/testsuite/evaluator/55.liz: New. Test for Ticket #60.
+
+2014-06-08  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (elaborate_definition): Now a
+	template parameterized by context and context quantifier.
+	(make_quantified_type): New helper function.
+	(QDefContext): New.
+	(elaborate_definiens): Overload on QDefContext<C>.
+	(elaborate_quantified): Handled quantified definitions.
+	(Identity): New.
+	(Elaborator::elaborate): Adjust call to elaborate_definition.
+
+2014-06-07  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (do_elaborate_definition): New.
+	Capture abstract pattern for elaborating definitions.
+	(elaborate_definiens): New.
+	(check_if_redeclaration): Likewise.
+	(finish_function): Remove.
+	(elaborate_form_definition): Remove.  Adjust callers.
+	(elaborate_simple_definition): Likewise.
+	* src/semantics/Environment.H (Environment<>::operator bool):
+	Rename from Environment<>::operator void*.  Make explicit.
+
+2014-06-07  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/support/utility.H (debug::Verbosity): Add scope.
+	* src/semantics/elaboration.C (print_scope_stack_enter): New.
+	(print_scope_stack_leave): Likewise.
+	(ScopeManager::ScopeManager): Use it.
+	(Scopemanager::~Scopemanager): Likewise.
+	(has_logical_values): New.
+	(Elaborator::coerce): Use it.
+	(check_ctor_as_type): Change type of second parameter.  Tidy.
+	(elaborate_signature): Tidy.
+	(NameTypePair): New.
+	(get_name_type): New.  Use it.
+	(elaborate_postulate): Simplify.
+	* src/semantics/Expression.H (Postulate): Drop ScopeRef component.
+	(ExpressionFactory::build_postulate): Adjust.
+	* src/semantics/Expression.C (declare): Define new overload.
+	(Postulate::Postulate): Adjust.
+	(ExpressionFactory::build_postulate): Likewise.
+	* src/semantics/Environment.H (EnvRef::const_iterator): New.
+	(EnvRef::begin): Likewise.
+	(EnvRef::end): Likewise.
+	* src/meta/Elaborator.H (Elaborator::formula_type): Remove.
+	(Elaborator::get_formula): Likewise.
+	* src/meta/Elaborator.C (Elaborator::Elaborator): Remove
+	initialization of formula_type.
+	* src/cli/driver.C (debug_table): Add entry for debug::scope.
+	* src/semantics/expression-io.C (sexpr): Remove overload for ScopeRef.
+
+2014-05-29  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/meta/Evaluator.C (evaluate): Add overload for call to
+	Constructor. 
+	* src/meta/Elaborator.C (fm_concept): Rewrite.
+	* src/semantics/elaboration.C (elaborate_operation_definition):
+	Rename to elaborate_form_definition.  Remove old definition of latter.
+	(elaborate_simple_definition): Tidy.
+	(elaborate_definition): Likewise.
+
+2014-05-28  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (Elaborator::DeclContext): Tidy.
+	(SimpleDeclContext): New.
+	(elaborate_simple_definition): Use it.
+	(FormContext): Now derive from DeclContext.
+	(finish_function): Tidy.
+
+2014-05-28  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (has_type_values): Tidy.
+
+2014-05-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Materialize concept constructors [part 4]
+	* src/semantics/elaboration.C (check_ctor_as_type): New.
+	(Elaborator::coerce_to_type): Use it.
+	* src/semantics/Type.C (RestrictedType::print_on): Special case
+	restricted type that is use of unary concept constructor are type.
+
+2014-05-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Materialize concept constructors [part 3]
+	* src/semantics/Expression.H (Signature): Remove constraint component.
+	(BasicView): Likewise.
+	(Domain): Likewise.
+	(Constraint): Now take a Constructor.
+	* src/semantics/Expression.C: Adjust implementations.
+	* src/semantics/elaboration.C: Likewise.
+	* src/meta/Evaluator.C: Likewise.
+	* src/io/pretty-print.C: Likewise.
+
+2014-05-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Materialize concept constructors [part 2]
+	* src/meta/Evaluator.C: Remove reference to LensType.
+	* src/semantics/Expression.C: Likewise.
+	* src/semantics/Expression.H: Likewise.
+	* src/semantics/expression-io.C: Likewise.
+	* src/semantics/Type.C: Likewise.
+	* src/semantics/elaboration.C: Likewise.
+	(build_expr_constraint): Remove.
+	(build_constraint): Likewise.
+	(expr_rep_entails): Likewise.
+	(Elaborator::coerce_to_type): Do not use them.
+	(satisfies): Likewise.
+	(load_assumption_on_parameter): Likewise.
+	
+2014-05-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Materialize concept constructors [part 1]
+	* src/meta/Elaborator.H (Elaborator::getFunction): Now return a
+	Constructor. 
+	* src/meta/Elaborator.H (Elaborator::Elaborator): Simplify.
+	(abstract_constraint): Remove.
+	(build_nilacdic_function_type): Likewise.
+	(finish_regular_concept): Likewise.
+	* src/semantics/elaboration.C (entail): Temporarily disable check
+	for functional constraints.
+	(discharge_constraint): Likewise.
+	(check_concept_ctor_definition): New.
+	(elaborate_concept): Use it.
+
+2014-05-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (FormContext::commit): New.
+	(finish_function): Use it.
+
+2014-05-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (build_mapping): Simplify.
+	(finish_function): Likewise.
+	(elaborate_operation_definition): Likewise.
+
+2014-05-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/Environment.H (Environment<>::select): Now return
+	a binding_type.  Adjust callers.
+	(Stack<>::select_if_can): Likewise.
+	(Stack<>::select): Tidy.
+	* src/semantics/Expression.C (lookup_function): Likewise.
+	(declare): Likewise.
+	* src/semantics/Expression.H (declare): Now return a Declaration.
+	* src/semantics/elaboration.C (discharge_constraint): Tidy.
+	(finish_definition): Likewise.
+	(finish_function): Likewise.
+	(assume_property): Likewise.
+	* src/meta/Evaluator.C (read_component): Likewise.
+	(lexical_or_global_var): Likewise.
+	(evaluate): Likewise.
+
+2014-05-22  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/Environment.H (Environment<>::select): Now return
+	a binding_type.  Adjust callers.
+	* src/semantics/elaboration.C (elaborate_literal): Adjust.
+
+2014-05-21  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (elaborate_operation_definition): Tidy.
+	(finish_function): Likewise.  Take a FormContext as first argument.
+
+2014-05-21  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/meta/Evaluator.C: Adjust handling of BindExpression.
+	* src/semantics/Expression.C: Likewise.
+	* src/semantics/Expression.H: Now a binary structure.
+	* src/backend/cxx.C: Abort on translating BindExpression and
+	WriteExpression. 
+	* src/semantics/elaboration.C: Generate bind, not write insn.
+
+2014-05-20  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (elaborate_signature): Remove bogus
+	overload.  Adjust caller.
+	(Elaborator::elaborate): Do not handle SignatureAst here.
+
+2014-05-20  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (DeclContext::name): New.
+	(DeclContext::type): Likewise.
+	(finish_definition): Use them.
+	(finish_function): Likewise.
+
+2014-05-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (BasicContext): Now hold home scope.
+	(Elaborator::DeclContext): Simplify.
+	(FormContext): Likewise.
+	(elaborate_form_definition): Take a context as first argument.
+	Adjust callers.
+	(elaborate_simple_definition): Likewise.
+	(generative_type_and_consort): Likewise.
+	(elaborate_definition): Tidy.
+
+2014-05-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (BasicContext): New.
+	(Elaborate::DeclContext): Derive from it.  Simplify.
+	(FormContext): Likewise.
+	(QuantContext): New.
+	(elaborate_quantified): Use it.  Simplify.
+
+2014-05-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/Expression.H (Value::get): Now pure virtual.
+	(structured_value<>): New.  Use in lieu of value_impl<>.
+	* src/semantics/Expression.C (Value::get): Remove definition.
+	
+2014-05-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/Expression.H (Expression::accept): Now pure virtual.
+	(Value): Derive directly from Expression.
+	* src/semantics/Expression.C (Expression::accept): Remove definition.
+
+2014-05-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/Expression.H (Value::Kind): Remove as unused.
+
+2014-05-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (FormContext): New.
+	(elaborate_operation_definition): Reduce number of arguments.
+	Take a FormContext as first parameter.  Tidy.  Adjust caller.
+	(elaborate_form_definition): Adjust.
+
+2014-05-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (finish_definition): Lose third
+	parameter.  Take linkname from the DeclContext.  Adjust callers.
+
+2014-05-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Token.H (token::using_tok): Remove.
+	* src/syntax/Token.C (keyword_table):: Remove token::using_tok.
+	* src/semantics/elaboration.C (only_identifier): Remove.
+	(elaborate_alias): Likewise.
+	(elaborate_binary): Don't call it.
+
+2014-05-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (DeclContext): Add Elaborator
+	accessor and overload operator->.
+	(with_decl<>): Adjust constructor.
+	(SemanticsErrorAt): Likewise.
+	(UndeclaredError): Likewise.
+	(semantics_error): Adjust.
+	(undeclared_error): Likewise.
+	(finish_definition): Change first parameter to DeclContext.  Tidy.
+	Adjust callers.
+	(finish_function): Likewise.
+	* src/meta/Elaborator.H (Elaborator::top_decl_context): Now return
+	a pointer to non-const DeclContext.
+	* src/meta/Elaborator.C (Elaborator::top_decl_context): Adjust
+	retunr type.
+
+2014-05-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (DeclContextManager): Remove.
+	Adjust users.
+	* src/meta/Elaborator.H (DeclContext): Now a member of Elaborator.
+	Move to semantics/elaboration.C.
+	(Elaborator::push_decl_context): Remove.
+	(Elaborator::pop_decl_context): Likewise.
+	* src/meta/Elaborator.C (Elaborator::push_decl_context): Likewise.
+	(Elaborator::pop_decl_context): Likewise.
+	(Elaborator::top_decl_context): Tidy.
+
+2014-05-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (elaborate_formula): A quantified
+	type is a type.
+	* src/semantics/expression-io.C (sexpr_quantified_params): New.
+	(sexpr): Add overload for QuantifiedType.
+
+2014-05-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (refine_type_from_initializer): Remove.
+	(elaborate_definition): Remove for being largely redundant.
+	(elaborate_alias): Tidy. 
+
+2014-05-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (access): Remove.  Adjust caller.
+	(read): Fix thinko.
+
+2014-05-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (elaborate_formula): Remove
+	duplicate code.  Use elaborate_quantifier.
+
+2014-05-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (new_concept): New.
+	(elaborate_signature): Likewise.
+	(elaborate_requirement): Likewise.
+	(build_abstract_constraint): Likewise.
+	(elaborate_concept): Likewise.
+	(elaborate_initializer): Handle concepts.
+	* src/semantics/Expression.H (ExpressionFactory::build_signature):
+	Second argument is now a type.
+	* src/semantics/Expression.C (ExpressionFactory::build_signature):
+	Adjust. 
+
+2014-05-16  Michael Lopez  <mjl@axiomaics.org>
+
+	Reverted commit 709.
+        * src/semantics/elaboration.C: (coerce_to_type): Reverted.
+	      (Elaborate::coerce): Reverted.
+        (elaborate_variant): Reverted.
+
+2014-05-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/Expression.H (abstraction<>): Remove.
+	(Concept): Adjust.
+	* src/semantics/Expression.C (Concept::Concept): Likewise.
+	* src/meta/Elaborator.C (finish_regular_concept): Simplify.
+	(builtin_unary_concept): Rename from builtin_concept.  Tidy.
+	(Elaborator::Elaborator): Adjust.
+
+2014-05-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/meta/Elaborator.C (finish_regular_concept): Signatures are
+	postulates. 
+
+2014-05-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/Expression.H (Concept): Do not derive from
+	ToplevelScope.  
+	(ExpressionFactory::build_concept): Lose last parameter.  Adjust
+	callers. 
+	* src/meta/Elaborator.C (builtin_concept): Adjust.
+	* src/semantics/Expression.C (Concept::Concept): Likewise.
+
+2014-05-14  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/testsuite/parser/56.liz: New. Test case for Ticket #56.
+
+2014-05-14  Michael Lopez  <mjl@axiomatics.org>
+
+	Fix Ticket #54.
+	* src/semantics/elaboration.C (Elaborator::coerce): Updated. Simplify the
+	value's type.
+	* (coerce_to_type): Update.
+	* (elaborate_variant): Updated.
+
+2014-05-14  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/trestsuite/evaluator/55.liz: New. Test for Ticket #55.
+
+2014-05-14  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/testsuite/elaboration/54.liz: New. Test for Ticket #54.
+
+2014-05-07  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (possibly_indented): New.
+	(do_parse_rule_body): Likewise.  Use possibly_indented.
+	(parse_rule): Use it.
+	(parse_implication): Allow equivalence.
+	* src/syntax/Token.C (lex_less_et_al): New.
+	(ingest_tokens_from): Use it.
+
+2014-05-06  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/testsuite/debugger/51.liz: New. Test case for ticket 51.
+
+2014-05-06  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #51.
+	* src/semantics/expression-io.C: Print concepts by name only.
+
+2014-05-06  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #28.
+	* src/syntax/Ast.H (ReturnAst): Now a binary structure.
+	(LeaveAst): Likewise.
+	(ThrowAst): Likewise.
+	(AstFactory::make_return): Adjust.
+	(AstFactory::make_leave): Likewise.
+	(AstFactory::make_throw): Likewise.
+	* src/syntax/Ast.C: Adjust implementations.
+
+2014-05-06  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix ticket #8.
+	* src/semantics/elaboration.C (no_match): Tidy.
+	(elaborate_datatype): Push fields in local scopes for the benefit
+	of dependent records.
+
+2014-05-05  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (layout_justify_at): New.
+	(match_justify_at): Use it.
+	(layout_line_count): Likewise.
+	(check_indented_line_end): New.
+	(indented): Likewise.
+
+2014-05-05  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix ticket #33.
+	* src/meta/Evaluator.C (evaluate)[Assertion]: Evaluate argument
+	before setting callframe.
+
+2014-05-05  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #31.
+	* src/syntax/Parser.C (skip_indentation): Remove.  Adjust callers.
+	(layout_line_count): Rename from staring_at_pile.  Return pile
+	logical lines count.
+	(indented): New.
+	(at_pile_end): Do advance token cursor when at pile end.
+	(parse_case_or_else): New.
+	(parse_case_pile): Use it.
+	(parse_local_decl_or_else): New.
+	(parse_locals): Use it.
+
+2014-05-05  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (parse_rule): Avoid flexible_match.
+	(parse_postulate): Likewise.
+	(parse_intro): Likewise.
+
+2014-05-05  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (parse_simple_statement): Rename from
+	parse_expression_or_assignment. 
+
+2014-05-04  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (parse_primary): Allow compound statements.
+	(parse_statement): Don't parse them here.
+
+2014-05-04  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (parse_exit): Accept 'where' expressions.
+	(parse_quantified): Body is now 'where' expression.
+	(parse_assumption): Likewise.
+
+2014-05-04  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (match_justify_at): Robustify.
+	(at_pile_end): Likewise.
+
+2014-05-04  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (match_at): Remove.
+	(match_else):  Tidy.
+
+2014-05-04  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (match_formatted_wisecrack): Now take an
+	itertor as argument.  Adjust caller.
+	(skip_blank): Now take two iterators.  Adjust callers.
+
+2014-05-04  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (acceptable_else_indent): New.
+	(parse_else): Likewise.
+	(parse_conditional): Use them.  Tidy parsing of conditionals.
+	(parse_local_decl): Local bindings now have general initializer syntax.
+
+2014-05-04  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #40.
+	* src/syntax/Parser.C (parse_declaration): Remove.  Adjust caller.
+	(parse_statement): No longer allow declaration.
+	* src/syntax/Token.H (token::Kind::declare_tok): Remove.
+	* src/syntax/Token.C: Remove from token::keyword_table.
+
+2014-05-03  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/testsuite/parser/52.liz: Added test for ticket #52.
+
+2014-05-02  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/testsuite/elaboration/40.liz: Added test for ticket #40.
+
+2014-05-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #11.
+	* src/syntax/Parser.C (parse_signature_block): A signature-block
+	is either a pile of signature or brace-delimited comma-separated
+	signature list.
+
+2014-05-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #39.
+	* src/semantics/elaboration.C (elaborate_formula): Fix typo.
+
+2014-04-30  Michael Lopez  <mjl@axiomatics.org>
+
+	* src/testsuite/parser/50.liz: Test for ticket 50.
+
+2014-04-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Token.C (operator<<): Insert a justify token after
+	bracketing a pile, before next token.
+	* src/syntax/Parser.C (at_pile_end): Rename from check_pile_layout.
+	Now indicate end of pile.  Adjust caller.
+	(pile): Lose last parameter.  Tidy.
+
+2014-04-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (check_pile_layout): New.
+	(pile): Call it.
+	(parse_compound): Tidy.
+
+2014-04-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #47.
+	* src/semantics/elaboration.C (UndeclaredError): New.
+	(undeclared_error): Likewise.
+	(lexical_fiber_or_else): Call it in lieu of semantics_error.
+	(try_initializer): Catch only SemanticsErrors.
+
+2014-04-25 Michael Lopez <mjl@axiomatics.org>
+
+	* src/testsuite/parser/38.liz: Added test for Ticket #38.
+
+2014-04-25 Michael Lopez <mjl@axiomatics.org>
+
+	* src/testsuite/parser/31.liz: Added test for Ticket #31.
+
+2014-04-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (elaborate_arrow): Don't forget to
+	coerce to target type.
+
+2014-04-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #44.
+	* src/meta/Evaluator.H (CallFrame::address): Declare.
+	* src/meta/Evaluator.C (CallFrame::address): Define.
+	(evaluate): Overload for TypeExpression.  Tidy evaluation of Formal.
+	(EvaluationVisitor::visit): Evaluate TypeExpression.
+
+2014-04-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/meta/Evaluator.C (evaluate): A Formal designates the storage
+	of the corresponding argument.
+	* src/semantics/elaboration.C (refer_by_name): Formals are already
+	symbol references. 
+
+2014-04-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (elaborate_parameter): Simplify.
+	(elaborate_formula): Remove duplicate code.  Call elaborate_parameters.
+	(print_ast_elaboration): Print elaboration context.
+
+2014-04-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (elaborate_parameter): Lose forth
+	parameter since it is always defaulted.
+
+2014-04-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (coerce_to_type): Remove superfluous
+	cast.
+
+2014-04-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics/elaboration.C (elaborate_type): coerce_to_type
+	checks for the outcome as usable as type.
+
+2014-04-21  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #29.
+	* src/syntax/Token.H (SyntaxError): Define.
+	* src/syntax/Token.C (SyntaxError::SyntaxError): Define.
+	(syntax_error): New.
+	(nonblank): Skip only whitespace character.
+	(ingest_tokens_from): Report tabs as syntax errors.
+	* src/io/Input.H (input::Location): New.
+	* src/meta/Evaluator.C (Evaluator::toplevel_loop): The tokenizer can
+	now signal errors.
+
+2014-04-21  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #35.
+	* src/syntax/Token.C (operator<<): Fix thinko.
+
+2014-04-21  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #42.
+	* src/syntax/Parser.C (nth_token): Allow 0-based index.
+	(staring_at): Add overload for set of token classes.
+	(parse_instantiation): Remove.  Adjust caller.
+	(parse_named_parameter): Call parse_nontag_type instead.
+	(do_parse_quantified): New.
+	(parse_quantified): Use it.
+	(parse_quantified_type): Remove.
+	(parse_nontag_type): Call parse_quantified instead.
+	(parse_enclosed): Fix thinko.
+
+2014-04-20  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #36.
+	* src/syntax/Token.C (operator<<): Don't retain wisecrack lines
+	for determining formatting.
+	* src/io/Input.H (input::Line::operator[]): New.  Convenience notation.
+
+2014-04-20  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (any_operator): Rename from is_operator.
+	Adjust callers.
+	(binary_operator): New.  Split from any_operator.
+	(suffix_or_binary_operator): Likewise.
+	(finish_suffix_form): New.
+	(finish_prefix_form): Likewise.
+	(parse_prefix_form_tail): Likewise.
+	(finish_infix_form): Likewise.
+	(parse_definiendum): Tidy.  Use them.
+	* src/syntax/Ast.H (AstFactory::make_prefix_form): Declare.
+	(AstFactory::make_suffix_form): Likewise.
+	(AstFactory::make_infix_form): Likewise.
+	* src/syntax/Ast.C: Define them.
+
+2014-04-20  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (parse_closed_form_tail): New.  Abstract
+	from parse_definiendum.
+	(parse_definiendum): Use it.
+
+2014-04-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (parse_operator_name): Fix off-by-one.
+
+2014-04-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (parse_call_form_tail): Rename from
+	parse_parameter_list.
+	(parse_definiendum): Tidy. Adjust.
+
+2014-04-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (nth_token): Fix thinko.
+	(staring_at): New.
+	(parse_tag_type): Use it.
+
+2014-04-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/io/Output.H (io::operator<<): Add overload for int, intmax_t,
+	double, and size_t values.
+
+2014-04-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Tidy fix for Ticket #35.
+	* src/syntax/Parser.C (formatting): New.
+	(advance_if_eq): Likewise.
+	(match_formatted_wisecrack): Likewise.
+	(skip_blank): Use it.
+	(match): Use advance_if_eq.
+
+2014-04-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #35.
+	* src/syntax/Token.H: Remove token::comment_tok.
+	* src/syntax/Token.C: Likewise.
+	* src/syntax/Parser.C (skip_blank): Remove overload.  Skip
+	justity_tok at same level as previous indent_tok.
+	(match): Tidy.
+	(match_if): Likewise.
+	(nth_token): Likewise.
+
+2013-12-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Token.C (nonblank): Rename from skip_blank.  Change
+	signature. 
+	(ingest_tokens_from): Adjust call.  Tidy.
+
+2013-11-03  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Make builtin character type capable of holding Unicode values.
+	* src/io/Character.H: New.
+	* src/io/Character.C: Likewise.
+
+2013-04-30  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (pile): Take additional indentation parameter.
+	(parse_case_pile): Rename from parse_case_pile.  Adjust callers.
+	(parse_locals): Adjust.
+
+2013-04-30  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (parse_where_clause): New.  Split from
+	parse_where.
+	(parse_where): Tidy.
+	(expr_stmt_or_assignment_tail): Fold into
+	parse_expression_or_assignment.  Remove.
+	(parse_expression_or_assignment): Rename from
+	parse_simplement_statement_or_assignment.  Accept local definitions.
+
+2013-04-30  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (parse_brace): Remove as braces no longer
+	introduce compound statements.  Adjust callers.
+
+2013-04-30  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (require_semicolon): Remove as unused.
+
+2013-04-30  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (flexible_match): New.
+	(skip_indentation): Likewise.
+	(match_justify_at): Likewise.
+	(match_at): Likewise.
+	(staring_at_pile): Likewise.
+	(pile): Likewise.
+	(parse_compound): Now accept only pile of statements.
+	(require_then): New.
+	(match_else): Likewise.
+	(parse_conditional): Allow then and else branches on appropriately
+	intended newline.
+	(parse_initializer): Tidy.
+	(parse_rule): Likewise.
+	(parse_postulate): Likewise.
+	(parse_intro): Likewise.
+	(parse_statement): Tidy.
+
+2013-04-30  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (require_indentation_at): New.
+	(parse_toplevel): Use it.  Take additional token parameter.
+	(parse_toplevel_pile): New.  Split out of parse_module.
+	(parse_module): Tidy.
+
+2013-04-29  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #27.
+	* src/io/Input.H (input::Line::blank): New predicate.
+	* src/io/Input.C: Define.
+	* src/syntax/Token.C (operator<<): Use it.  Skip over blank lines.
+
+2013-04-29  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax/Parser.C (QuantifierHeader): New.
+	(parse_quantifier_header): Likewise.
+	(do_parse_intro): Split out of parse_intro.
+	(parse_intro): Allow quantified introductory forms.
+
+2013-04-28  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/io/Input.H (input::Line): Tidy.  Adjust users.
+	* src/syntax/Token.H (TokenStream): Downgrade to bidirectional
+	iterable.  Support range query for lines.
+
+2013-04-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/overseer/: New.
+	* src/overseer/BasicDriver.H: Likewise.  Split from src/syntax/Parser.H
+	* src/overseer/BasicDriver.C: New.  Split from src/syntax/Parser.C.
+	* src/syntax/Parser.C: Tidy.
+	* src/cli/driver.C (main): Create local reader.  Tidy.
+	* src/meta/Compiler.H: Tidy.
+	* src/meta/Compiler.C: Likewise.
+	* src/meta/Elaborator.H: Likewise.
+	* src/meta/Elaborator.C: Likewise.
+	* src/meta/Evaluator.H: Likewise.
+	* src/meta/Evaluator.C: Likewise.
+
+2013-04-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/cli: New.  Move command-line files here.
+
+2013-04-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/support: New.  Move support-related files here.
+
+2013-04-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/meta: New.  Move translation-related files here.
+
+2013-04-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/io: New.  Move io-related files here.
+
+2013-04-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/semantics: New.  Move semantics-related files here.
+
+2013-04-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/syntax: New.  Move syntax-related files here.
+
+2013-04-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* Makefile.am (SUBDIRS): Add include/.
+	* include/Makefile.am: New.
+	* include/Makefile.in: Generate.
+
+2013-04-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/ide/Editor.H: New.
+	* src/ide/Editor.C: Likewise.
+	* src/ide/MainWindow.H: Likewise.
+	* src/ide/MainWindow.C: Likewise.
+
+2013-04-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Makefile.am (libliz_a_SOURCES): New.  Split from liz_SOURCES.
+	(liz_LDADD): New.
+	* src/ide/qt-mk.pro.in (LIZ_LIB): Give proper value.
+
+2013-04-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/ide/main.cc: New.
+	* src/ide/qt-mk.pro.in: Likewise.
+	* src/Makefile.am (SUBDIRS): Define.
+	(ide/Makefile): New target.
+
+2013-04-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_error): Tidy.  Adjust callers.
+
+2013-04-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.H (ParsingContext): New.   Abstract from Parser.
+	(Parser): Simplify.
+	* src/Parser.C (match): Now a non member function.  Adjust callers.
+	(match_if): Likewise.
+	(at_eoi): Change parameter type to ParsingContext*.  Adjust callers.
+	(current_token): Likewise.
+	(nth_token): Likewise.
+	(nth_token_is): Likewise.
+	(skip_blank): Add overload.
+
+2013-04-22  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (require_semicolon): Remove as unused.
+	(parse_control_statement): Do not require terminating semicolon.
+
+2013-04-22  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_simple_statement_or_assignment): Do not
+	require terminating semicolon.
+	(expr_stmt_or_assignment_tail): Likewise.
+
+2013-04-22  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_where): Do not require terminating semicolon.
+	(parse_local_decl): Likewise.
+	(parse_assumption): Likewise.
+	(parse_postulate): Likewise.
+	(parse_specification): Likewise.
+
+2013-04-22  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_import): Do not require terminating semicolon.
+
+2013-04-20  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #25.
+	* src/intrinsics.C (binary_intrinsic_table): Fix thinko.
+
+2013-04-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::operator<<): Resurect.
+
+2013-04-05  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::value): Add overload for string literals.
+	(token::Kind): Use it to give values to token kinds.
+	* src/Token.C (token::operator<<): Remove as unused.
+
+2013-03-30  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::description_tok): Rename from
+	token::doube_plus_tok.
+	(token::wisecrack_tok): Rename from token::double_minus_tok.
+	* src/Token.C (description): New.
+	(wisecrack): Likewise.
+	(lex_plus_et_al): Likewise.
+	(lex_minus_et_al): Likewise.
+	(ingest_tokens_from): Use them.  Recognize descripions and wisecracks.
+	* src/Ast.H (DescriptionAst): New.
+	* src/Ast.C: Implement.
+	* src/ast-io.C: Likewise.
+	* src/Parser.C (parse_description): New.
+	(parse_toplevel): Accept descriptions.
+
+2013-03-30  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/utility.H (iterator::basic): New.
+	* src/Input.H (Line): Use it as checking iterators.  Adjust users.
+
+2013-03-30  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/utility.H (defaults::neq): New.
+	(defaults::ordering): Likewise.
+	(Symbol): Inherit from them for defaults comparison functions.
+
+2013-03-28  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #23.
+	* src/Parser.C: Rewor arrow and implication rules.
+
+2013-03-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_definiendum): Allow all forms of literals.
+
+2013-03-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_arrow_domain): New.
+	(elaborate_arrow): Use it.  Fix thinko.
+
+2013-03-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (has_generative_instances): New.
+	(build_mapping): Likewise.
+	(finish_function): Use them. Build constructors for functions with
+	generative instances.
+
+2013-03-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_case_pattern): Fix thinko, accept literals.
+	* src/elaboration.C (elaborate_match): Force read on scrutinee.
+
+2013-03-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #22.
+	* src/Parser.C (parse_initializer): Tidy.
+
+2013-03-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H(token::match_tok): Rename from token::switch_tok.
+	(token::with_tok): New.
+	* src/Token.C: Propagate changes.
+	* src/Ast.H (MatchAst): Rename from SwitchAst.
+	* src/Ast.C: Propagate changes.
+	* src/ast-io.C: Likewise.
+	* src/Parser.C: Likewise.
+	* src/elaboration.C: Likewise.
+
+2013-03-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (LineAst): Remove.
+	* src/Ast.C: Propagate changes.
+	* src/ast-io.C: Likewise.
+	* src/elaboration.C: Likewise.
+
+2013-03-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Fragment): Rework.
+	* src/Ast.C (slurp_lines_into): New.
+	(AstFactory::make_source_file): Use it to read in lines.
+	* src/Evaluator.C: Propagate changes.
+	* src/Token.H: Likewise.
+	* src/Token.C: Likewise.
+	* src/Parser.H (Reader::read): Remove.
+	* src/Parser.C: Propagate changes.
+
+2013-03-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (Token::ingest_tokens_from): Remove.  Adjust callers.
+	(operator<<): New.
+	* src/Token.C: Implement.
+	* src/Evaluator.C: Propagate changes.
+	* src/Parser.C: Likewise.
+
+2013-03-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (Token): Rework.  Replace text field with span.
+	Remove column field.
+	(column): New.
+	(length): Likewise.
+	(begin): Likewise.
+	(end): Likewise.
+	(lexeme): Likewise.
+	* src/Input.H (Span): Simplify.
+	* src/Token.C (make_token): Simplify.
+	(lexeme_equals): New.
+	(is_keyword): Use it.  Change parameter type to Token.  Adjust caller.
+	(transform_escape_char): Comment out.
+	(fixup_escape_chars): Likewise.
+	* src/Ast.H (Atomi::text): Remove.
+	* src/Expression.H (ExpressionFactory::intern): Add overload for Token.
+	(ExpressionFactory::build_identifier):Likewise.
+	(ExpressionFactory::build_operator):Likewise.
+	* src/Expression.C: Propagate changes.
+	* src/Parser.C: Likewise.
+	* src/ast-io.C: Likewise.
+	* src/elaboration.C: Likewise.
+
+2013-03-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Input.H: New.
+	* src/Input.C: Likewise.
+	* src/Ast.H (Fragment): Inherit from input::Source too.
+	* src/Makefile.am (liz_SOURCES): Inlcude Input.C.
+	* src/Parser.C (ErrorAt::disclose_location_on): Tidy.
+	(Reader::read): Likewise.
+	* src/Parser.H (ErrorAt::line): Adjust return type.  Adjust callers.
+	* src/Token.C: Propagate changes.
+	* src/Token.H (Line): Remove.
+	(LineIterator): Likewise.
+	(Token::line): Adjust type.
+	(TokenStream): Tidy.  Remove lines field.  Make moveable.
+	* src/utility.H (structure::unary): Make constructor constexpr.
+	(structure::binary): Likewise.
+	(structure::ternary): Likewise.
+
+2013-03-22  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::prolong_tok): New.
+	* src/Token.C (keyword_table): Add "prolong".
+	* src/Ast.H (ProlongAst): New.
+	* src/Ast.C: Implement.
+	* src/ast-io.C: Likewise.
+	* src/Parser.C (parse_multiplicative): Add "div", "quo", "mod" and
+	"rem".
+	(def_builder): New.
+	(parse_intro): Split out of parse_definition.
+	(parse_definition): Use it.
+	(parse_prolong): New.
+	* src/elaboration.C (valid_statement_at_nonlocal_scope): Rework.
+	(filter_nonlocal_statement): Tidy.
+	(elaborate_members): New.  Split out of elaborate_namespace.
+	(elaborate_prolong): New.
+	(Elaborator::elaborate) [ProlongAst]: Call it.
+
+2013-03-22  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (ArrowAst): New.
+	* src/Ast.C: Implement.
+	* src/ast-io.C: Likewise.
+	* src/elaboration.C: Likewise.
+	* src/Parser.C (parse_arrow): New.
+	(parse_expression): Use it in lieu of parse_implication.
+	(parse_quantified): Likewise.
+	(parse_nontag_type): Likewise.
+	(parse_arrow_type): Remove.  Adjust users.
+
+2013-03-22  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (is_literal): New.
+	(cannot_overload): Likewise.
+	(get_name_and_ensure_uniqueness_if_necessary): Use it.  Tidy.
+
+2013-03-21  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* misc/liz.m4 (LIZ_CHECK_GMP): New.  Handle --with-gmp.
+	(LIZ_SUPPORT_LIBRARIES): Use it.
+
+2013-03-21  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #22.
+	* src/Evaluator.C (substitute): Add overload for GenerativeType.
+	Ensure uniqueness.
+	(TypeSubtitutionVisitor) [GenerativeType]: Use it.
+	(simplify) [GenerativeType]: Ensure uniqueness.
+
+2013-03-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Name): No longer derive from Expression.
+	Make abstract base class of its own.
+	(Name::Visitor): New.
+	* src/Expression.C: Propagate changes.
+	(get_string): Remove.
+	* src/Elaborator.C: Propagate changes.
+	* src/Type.C: Likewise.
+	* src/backend/cxx.C: Likewise.
+	* src/Evaluator.C: Likewise.
+	* src/expression-io.C: Likewise.
+	* src/pretty-print.C: Likewise.
+	* src/elaboration.C: Likewise.
+	(NameSubstitutionVisitor): Remove.
+	(subst_name): Likewise.
+
+2013-03-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (QualifiedName): Remove.
+	* src/Expression.C: Propagate change.
+	* src/Evaluator.C: Likewise.
+	* src/backend/cxx.C: Likewise.
+	* src/expression-io.C: Likewise.
+
+2013-03-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (in_eqclass): Rename from
+	equivalent_to_one_member_except. Simplify.
+	(eqclasses_entail_equivalence): Remove.
+	(are_equivalent): Use it.
+	(is_inductive_definition): New.
+	(elaborate_inductive_body): New.
+	(elaborate_initializer): Use it.
+
+2013-03-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Evaluator.C (instantiate): New overload for Constructor.
+	(InstantiatorVisitor): Use it.
+	(SignatureSubstitutionVisitor): Likewise.
+
+2013-03-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/substitution.C: Move content to Evaluator.C.  Remove.
+	* src/Makefile.am (liz_SOURCES): Do not include it.
+
+2013-03-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (DeclContext): Add a scope field.
+	* src/Elaborator.C: Propagate changes.
+	* src/elaboration.C: Likewise.
+
+2013-03-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (PointerType): Remove.
+	* src/Expression.C: Propagate removal.
+	* src/Type.C: Likewise.
+	* src/expression-io.C: Likewise.
+	* src/Evaluator.C: Likewise.
+	* src/intrinsics.C: Likewise.
+	* src/pattern.C: Likewise.
+	* src/substitution.C: Likewise.
+	* src/backend/cxx.C: Likewise.
+
+2013-03-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (function_space): New.  Split out of FunctionType.
+	* src/Type.C: Propagate change.
+	* src/Expression.C: Likewise.
+	* src/pattern.C: Likewise.
+	* src/elaboration.C: Likewise.
+	* src/Evaluator.C: Likewise.
+	* src/intrinsics.C: Likewise.
+	* src/backend/cxx.C: Likewise.
+
+2013-03-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_target_type): New.
+	(do_elaborate_arrow_type): Use it.
+
+2013-03-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (Elaborator::get_union): Remove.
+	* src/Elaborator.C (Elaborator::get_union): Likewise.
+	* src/backend/cxx.C: Propagate changes.
+	* src/elaboration.C: Likewise.
+
+2013-03-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_datatype): Do not include specifications.
+	(parse_specification): New.  Split out of parse_datatype.
+	(parse_initializer): Call it.
+
+2013-03-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_variant): New.
+	(elaborate_datatype): Likewise.  Use it.
+	(Elaborator::elaborate) [DatatypeAst]: Use it.
+
+2013-03-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (basic_type_tokens): Remove token::variant_tok.
+	* src/Expression.H (VariantType): Simplify.
+	* src/Type.C: Propagate changes.
+	* src/backend/cxx.C: Likewise.
+	* src/elaboration.C: Likewise.
+
+2013-03-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (basic_type_tokens): Include string.  Reported by
+	Jasson Casey.
+
+2013-03-09  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (get_name_and_ensure_uniqueness_if_necessary): New.
+	(elaborate_simple_definition): Use it.  Tidy.
+
+2013-03-08  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_named_parameter): New.
+	(parse_named_parameter_list): Likewise.
+	(parse_parenthesized_named_parameter_list): Likewise.
+	(parse_quantified): Use it.
+	(parse_quantified_type): Likewise.
+	(parse_tag_type): Use parse_named_parameter.
+
+2013-03-07  Jordan Donais <jpdonais@tamu.edu>
+	    Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_implication): Tidy.
+	* src/testsuite/parser/19.liz: New.
+
+2013-03-07  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Quote): New.
+	* src/Expression.C: Implement.
+	* src/expression-io.C: Likewise.
+	* src/Elaborator.H (Elaborator::get_prop): Declare.
+	* src/Elaborator.C: Implement.
+	(fmt_prop): New.
+	(prop_traits): Likewise.
+
+2013-03-07  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::double_hash_tok): Remove.
+	(token::hash_exclamation_tok): New.
+	* src/Token.C (digraph_info): Update.
+	* src/Parser.C (closer): Likewise.
+
+2013-03-07  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #18.
+	* src/elaboration.C (elaborate_maybe_tag_type): New.
+	(elaborate_type): Call it for ParameterAst.
+	* src/testsuite/elaboration/18.liz: New.
+
+2013-03-05  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* configure.ac: Generate Makefiles for library dirctories.
+	* Makefile.am (EXTRA_DIST): New.
+	(SUBDIRS): Include library/
+	* library/: New.
+	* misc/liz.m4 (LIZ_SYSTEM_PATHS): New.
+	* src/Translator.H (Translator::stdlib_path): Declare.
+	* src/Translator.C: Implement.
+
+2013-03-05  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::quo): New.
+	* src/Token.C: Implement.
+	* src/Parser.C (mult_ops): Include "quo".
+	* src/Expression.H (Quo): New.
+	* src/expression-io.C: Likewise.
+	* src/Expression.C: Implement.
+	* src/Evaluator.C (simplify): Handle quo.
+
+2013-03-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_elementary): New.  Split from parse_primary.
+	(parse_primary): Use it.
+	(parse_selector): Likewise.  Accept literals as selectors.
+	* src/elaboration.C (default_type): Handle floating point literals.
+	(make_name): Add overload for LiteralAst.
+
+2013-03-01  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_initializer): Resurect.
+	(parse_definition): Use it.
+
+2013-02-28  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_locals): Tidy.
+	(parse_initializer): Remove.  Adjust callers.
+	(parse_rule): Require right hand side to be expression.
+	(parse_definition): Simplify.  Right hand side is now statement.
+
+2013-02-28  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::where_tok): New.
+	(token::public_tok): Remove.
+	(token::private_tok): Remove.
+	* src/Token.C: Implement.
+	* src/Ast.H (DeclarativeAst): New.
+	(declarative): Likewise.
+	(WhereAst): Likewise.
+	* src/Ast.C: Implement.
+	* src/ast-io.C: Likewise.
+	* src/Expression.H (LetExpression): New.
+	* src/Expression.C: Implement.
+	* src/expression-io.C: Likewise.
+	* src/Parser.C (parse_local_decl): New.
+	(parse_locals): Likewise.
+	(expr_stmt_or_assignment_tail): Use it.  Allow where statements.
+	* src/elaboration.C (elaborate_where): New.
+	(Elaborator::elaborate): Use it.
+	* src/Evaluator.C (evaluate): Add overload for LetExpression.
+	(Evaluator::eval): Use it.
+
+2013-02-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (is_braced): New.
+	(elaborate_empty_enclosure): Rename from elaborate_empty_brackets.
+	(is_paren_expr): New.
+	(elaborate_enclosure): Tidy.  A parenthesized expression is not a
+	call to the paren operator.
+
+2013-02-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_suffix): Resurect.
+	(parse_juxtaposition): Now extend suffix expression.
+	(parse_quanlified): Adjust.
+
+2013-02-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (refer_by_name): Postulate do not have
+	definitions, so don't postpone resolution.
+	(elaborate_postulate): New.
+	(Elaborator::elaborate) [PostulateAst]: Use it.
+	* src/Token.H (token::postulate_tok): New.
+	* src/Token.C (keyword_table): "postulate" is now a keyword.
+	* src/Parser.C (parse_postulate): New.
+	(parse_toplevel): Accept postulates.
+	* src/Expression.H (Postulate): New.
+	* src/Expression.C: Implement.
+	* src/Evaluator.H (FreeVariableError): New.
+	* src/Evaluator.C (FreeVariableError): Implement.
+	(free_variable_error): New.
+	(evaluate): Add overload for Postulate.
+	(Evaluator::eval): Remove.
+	(Evaluator::evaluate_toplevel): Handle schematic expressions.
+	* src/Ast.H (PostulateAst): New.
+	* src/Ast.C: Implement.
+
+2013-02-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (data_ops): Include "inductive" and "coinductive".
+	(parse_recursive_specification): Fold into parse_datatype.  Remove.
+	(parse_initializer): Adjust.
+	* src/Ast.H (InductiveAst): Remove.  No need for separate rep.
+	(CoinductiveAst): Likewise.
+	* src/Ast.C: Propagate changes.
+	* src/ast-io.C: Likewise.
+
+2013-02-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #16.
+	* src/Parser.C (parse_implementation): Fold in parse_signature.
+	Remove.
+	(parse_signature): Tidy.
+	(parse_signature_list): Rename from parse_signature_sequence.
+	Require comma between signatures.
+	(parse_signature_block): Tidy.
+	* src/Type.C: Format records according to new syntax.
+
+2013-02-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #16.
+	* src/Ast.C (anchor): An expression statement can be empty.
+
+2013-02-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (format_as_decl): New.
+	(no_match): Use it.
+
+2013-02-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (has_record_type_denotation): Remove.
+	Adjust callers.
+
+2013-02-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (lookup_fiber): Remove overload for Namespace.
+	(elaborate_basic_constraint): Remove.
+	(try_initializer): New.
+	(acceptable_arguments): Change arguments type to asts.  Adjust callers.
+	(is_viable_call): Likewise.
+	(resolve_overload): Likewise.
+	(strip_toplevel_reference): Remove.
+	(argument_types): Likewise.
+	(elaborate_maybe_call): Likewise.
+	(lookup_in_associated_scope): Likewise.
+	(include_associates): Likewise.
+	(elaborate_argument): Likewise.
+	(elaborate_arguments): Likewise.
+
+2013-02-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (is_parenthesized): New.
+	(get_arguments): Use it.  Tidy.
+	(elaborate_enclosure):  Check record initializers before
+	elaborating ordinary call arguments.
+
+2013-02-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (Elaborator::LocationManager): New.
+	(Elaborator::locs): Likewise.
+	* src/Elaborator.C: Implement.
+	* src/elaboration.C (SemanticsError): Remove.  Adjust users.
+	(semantics_error): Use current location from elaborator.
+	(Elaborator::elaborate): Push location contexts.
+
+2013-02-21  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_source_file): Do not create a
+	separate scope for the imported module, yet.
+
+2013-02-20  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (is_bracketed): New.
+	(elaborate_record): Likewise.
+	(elaborate_enclosure): Use them.
+	* src/Expression.H (Record): Tidy.
+	(Initializer): Likewise.
+	* src/Expression.C: Adjust.
+	* src/expression-io.C: Likewise.
+	* src/Evaluator.C (evaluate): Add overload for AssocArguments.
+	* src/Environment.H (Contour): Add freestanding as another kind.
+
+2013-02-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.C (token::keyword_table): "assert" is now a keyword.
+	* src/Token.H (token::assert_tok): New.
+	* src/Parser.C (parse_assertion): New.
+	(parse_postfix): Use it.
+	* src/Evaluator.C (simplify_lambda_call): Split out of
+	SimpleEvalVisitor::visit [CallExpression].
+	(assertion_failure): New.
+	(evaluate): Add overload for Assertion.
+	(EvaluationVisitor) [Assertion]: Use it.
+	* src/Ast.H (AssertAst): New.
+	* src/Ast.C: Implement.
+	* src/elaboration.C (elaborate_assert): New.
+	(Elaborator::elaborate) [AssertAst]: Use it.
+
+2013-02-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Use type context to resolve ambiguous calls.
+	* src/elaboration.C (call_builder): New.
+	(call_with): Add overload for call_builder.
+	(acceptable_arguments): Rename from is_viable_function.  Adjust
+	callers.
+	(is_viable_call): Rename from is_vianle_function.  Adjust callers.
+	(resolve_overload): Take type context as additional fifth parameter.
+	Adjust return type.  Adjust callers.
+
+2013-02-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (unary_builder): Drop second template
+	parameter. Adjust users.
+	(binary_builder): Likewise.
+	(call_with): Add overload for unary_builder and binary_builder.
+
+2013-02-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (FullApplication): New.
+	(finish_call): Remove.  Adjust callers.
+	(equality_expr): Use call instead of finish_call.
+	(is_viable_function):  Change return type to FullApplication.
+	Return converted arguments too.  Adjust callers.
+	(resolve_overload): Likewise.
+	(elaborate_call): Simplify.
+	(match_and_coerce_arguments): Remove.  Adjust callers.
+	(elaborate_infix):  Tidy.
+
+2013-02-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_call): Take type context as
+	additional fourth argument.  Adjust callers.
+	(elaborate_maybe_call): Likewise.
+
+2013-02-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (call_with): New.
+	(call): Use it.
+	(elaborate_prefix): Likewise.
+	(elaborate_infix): Likewise.
+
+2013-02-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elabborate_infix): Take type context as
+	additional fourth parameter.  Adjust caller.
+	(elaborate_prefix): Likewise.
+	(elaborate_binary): Take type context as additional third parameter.
+	Adjust caller.
+	(elaborate_unary): Likewise.
+
+2013-02-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_conversion): Remove.
+	(elaborate_maybe_call):  Stop supporting call syntax for conversion.
+
+2013-02-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (finish_call): Use call.
+
+2013-02-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (CoercionError): New.
+	(coercion_error): Likewise.
+	(successful_coercion): Likewise.
+	(fiber_section): Use it.
+	(is_viable_function): Likewise.
+	(literal_integer): Likewise.
+	(viable_for_right_section): Likewise.
+	(Elaborator::coerce): Use coercion_error.
+	(can_coerce_to): Remove.
+
+2013-02-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (elaborate_call): Remove declaration.
+	(finish_call_elaboration): Likewise.
+	(match_and_coerce_arguments): Likewise.
+	(is_type_function): Likewise.
+	* src/Makefile.am (liz_SOURCES): Remvoe overload.C.
+	* src/overload.C: Fold content back into elaboration.C.  Remove.
+
+2013-02-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #14.
+	* src/elaboration.C (literal_integer): Take teh target type as
+	additional argument.  Adjust caller.
+	(elaborate_integer):  Simplify.
+
+2013-02-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_double): New.
+	(elaborate_literal): Use it.  Accept floating point literals.
+
+2013-02-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_integer): Tidy.
+
+2013-02-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Scope::define): New.
+	(Namespace::scope): Override.
+	(GenerativeType::formatter): Likewise.
+	* src/Expression.C: Implement.
+	* src/elaboration.C (make_coerce_function): New.
+	(define_coercion): Likewise.
+	(generative_type_and_consort): Likewise.
+	(elaborate_simple_definition): Use it for generative type definition.
+
+2013-02-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Partial fix for Ticket #13.  Constructor bodies are expressions.
+	* src/Parser.C (is): Add overload for FixityForm.
+	(parse_definition):  Use it.  Enforce syntactic structure of a
+	constructor body.
+
+2013-02-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Partial fix to Ticket #11.
+	* src/backend/cxx.C
+	(cxx::Backend::translate_expr)[liz::TypeExpression]: Define.
+
+2013-02-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #12.
+	* src/elaboration.C (elaborate_empty_brackets): New.
+	(elaborate_enclosure): Use it.
+
+2013-02-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/intrinsics.C (intrinsic_default_scalar): New.
+	(intrinsic_empty_string): Likewise.
+	(NiladicIntrinsic): Likewise.
+	(niladic_intrinsic_table): Likewise.
+	(define_intrinsics): Remove niladics overload.
+
+2013-02-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (finish_enclosure): New.
+	(parse_enclosure): Use it.
+	(parse_parenthesis): Likewise.
+	(parse_primary): Accept brace-enclosed syntactic objects.
+	(parse_control_statement): Block statements are not controls.
+	(parse_collect_if_can): Split out of parse_enclosed.
+	(parse_enclosed): Use it.
+	(parse_brace): Likewise.  Split out of parse_initializer.
+	(parse_initializer): Likewise.
+	(parse_statement): Accept block statement here.
+
+2013-02-09  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Support definition of non-negative literal forms.
+	* src/Ast.H (AtomicForm): Remove.
+	(LiteralForm): New.
+	(AlphabethicForm): Likewise.
+	* src/Ast.C: Implement.
+	* src/ast-io.C: Likewise.
+	* src/Parser.C (parse_definiendum): Fix typo.
+	* src/elaboration.C (default_type): New.
+	(literal_name): Likewise.
+	(get_name): Overload for LiteralForm and AlphabethicForm.
+	(elaborate_simple_definition): Rename from overload for AtomicForm.
+	(elaborate_integer): Remove.
+	(Elaborator::elaborate): Accept integer literal definition.
+
+2013-02-09  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (BracketAst): New.
+	(EnclosureAst): Use it.  Simplify.
+	* src/Ast.C: Propagate change.
+	* src/Expression.C (make_name): Implement overload for BracketAst.
+	* src/Parser.C: Adjust call to BracketAst maker.
+	* src/ast-io.C: Implement BracketAst IO.
+	* src/elaboration.C (get_sequence): Split out of get_arguments.
+	(elaborate_enclosure): New.
+	(Elaborator::elaborate)[EnclosureAst]: Call it.
+
+2013-02-09  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (BraceAst): Remove.
+	* src/Ast.C: Likewise.
+	* src/ast-io.C: Likewise.
+	* src/elaboration.C (fiber_section_by_target): Likewise.
+	(elaborate_brace): Likewise.
+
+2013-02-08  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (definable_braces): New.
+	(parse_definiendum): Use it.  Accept brace forms.  Adjust callers.
+	* src/Ast.H (FixityForm): New.
+	(fixity): Likewise.
+	(AtomicForm): Likewise.
+	(PrefixForm): Likewise.
+	(SuffixForm): Likewise.
+	(InfixForm): Likewise.
+	(ClosedForm): Likewise.
+	(CallForm): Rename from CallFormAst.
+	(CallFormAst): No longer derive from Ast.  Adjust users.
+	(DefinitionAst): Adjust.
+	(RuleAst): Likewise.
+	(FixityForm::Visitor): New.
+	* src/Ast.C: Implement.
+	* src/ast-io.C: Likewise.
+	* src/Evaluator.C (Evaluator::Evaluator): Push an annonymous call
+	frame for toplevel evaluations.
+	* src/elaboration.C (build_name): Remove.
+	(is): Add overload for FixityForm.
+	(only_identifier): Likewise.
+	(elaborate_operation_definition): Split from elaborate_function.
+	(elaborate_form_definition): Split from elaborate_function.
+	(get_name): New.
+	(elaborate_parameters): Add overload for head forms.
+	(elaborate_definition): Rewrite.  Handle all head forms.
+
+2013-02-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (is_restriction): New.
+	(Elaborator::coerce): Use it.
+	* src/Evaluator.C (TypeEvaluator) [RestrictedType]: Evaluate.
+
+2013-02-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Formals): Add one more unary contructor.
+	* src/Expression.C: Implement.
+	* src/elaboration.C (check_section_context): New.
+	(PartialApplication): Likewise.
+	(right_section_equal): Likewise.
+	(viable_for_right_section): Likewise.
+	(fix_second_argument): Likewise.
+	(access): Likewise.
+	(read): Likewise.
+	(right_section_type): Likewise.
+	(fresh_formal): Likewise.
+	(lambda_for_right_section): Likewise.
+	(elaborate_right_section): Likewise.
+	(Elaborator::elaborate)[RightSectionAst]: Use it.
+
+2013-02-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (lexical_fiber_or_else): New.
+	(elaborate_name):  Use it.  Simplify.  Adjust callers.
+	(elaborate_identifier): Remove in favor of elaborate_name.
+	(elaborate_operator): Likewise.
+	(elaborate_bisection): Likewise.
+
+2013-02-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (Elaborator::semantics_error): New overload.
+	* src/Elaborator.C: Implement.
+	* src/elaboration.C: Use it.
+	* src/Ast.H (first_token): Declare.
+	* src/Ast.C: Implement.
+
+2013-02-01  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (JuxtaposeAst): New.
+	* src/Ast.C: Implement.
+	* src/ast-io.C: Likewise.
+	* src/Parser.C (parse_selector): New.
+	(parse_postfix): Use it.
+	(parse_juxtaposition): Rename form parse_suffix.  Accept
+	non-parenthesized application.
+	(parse_exponentiation): Adjust.
+	* src/elaboration.C (elaborate_juxtapose): New.
+	(Elaborator::elaborate)[JuxtaposeAst]: Use it.
+
+2013-02-01  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/backend/cxx.C (cxx::Backend::translate_expr): Fix typo.
+
+2013-01-31  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (make_predicate_type): New.
+	(elaborate_restriction): Use it.  Rework.
+	(elaborate_restricted_type): Tidy.
+
+2013-01-29  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_restriction): New.
+	(elaborate_restricted_type):  Use it.  Don't build restricted
+	types if the condition trivially holds.
+	* src/testsuite/elaboration/type-restriction-1.liz: New.
+
+2013-01-29  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Throw): New.
+	* src/Expression.C: Implement.
+	* src/expression-io.C: Likewise.
+	* src/elaboration.C (elaborate_throw): New.
+	(Elaborator::elaborate)[ThrowAst]: Use it.
+
+2013-01-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_identifier): Remove superfluous
+	overload.  Adjust caller.
+
+2013-01-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (select_field): New.
+	(selector_name): Likewise.
+	(has_record_type_denotation): Likewise.
+	(lookup_fiber): Simplify.
+	(semantics_fiber): Handle records.
+	* src/Expression.H (DotSelection): New.
+	* src/Expression.C: Implement.
+	* src/backend/cxx.C: Translate to C++.
+	* src/expression-io.C: Print as s-expression.
+	* src/substitution.C: Implement instantiation.
+
+2013-01-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H: Support generative type definition.
+
+2013-01-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Namespace): 'namespace' is a type but a
+	Namespace object itself does not designate a type.
+	* src/Elaborator.C: Propagate changes.
+	* src/Evaluator.C: Likewise.
+	* src/Expression.C: Likewise.
+	* src/Type.C: Likewise.
+	* src/elaboration.C: Likewise.
+
+2013-01-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C: Elaborate DotAst.
+	* src/Expression.H (Fiber::singleton): New.
+	* src/Elaborator.C (Elaborator::Elaborator): Construct the global
+	namespace with no name.
+	* src/backend/cxx-format.C: Be carefull about nonames.
+	* src/backend/cxx.C: Translate namespace expressions.
+
+2013-01-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (simple_name): New.
+	(semantics_fiber): Use it.  Simplify.
+	* src/Expression.H (Fiber): Add constructors.
+	* src/Expression.C: Implement.
+
+2013-01-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_name): Factorize out of
+	elaborate_identifier and elaborate_bisection.
+	(elaborate_identifier): Use it.
+	(elaborate_operator): Likewise.
+	(elaborate_bisection): Forward to elaborate_operator.
+	(is_abstract_value): Remove.
+	(lookup_fiber): Add overload accepting a Namespace.  Adjust all
+	lookup_fiber.
+
+2013-01-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (resolve_identifier_value): Remove as deadcode.
+
+2013-01-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (is_named_scope): Remove as deadcode.
+	(base_name): Likewise.
+	(lookup_name): Likewise.
+
+2013-01-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (is_functoid): Declare.
+	* src/Evaluator.C: Evaluate functions in builtin calls.
+	(evaluate) [ReadExpression]: New.
+	* src/Expression.H (CandidateSet): Remove.
+	(DeclOrder): Likewise.
+	* src/Expression.C (Fiber::append): New.
+	(linkage): Remove.
+	(DeclOrder): Remove implementation.
+	(CandidateSet): Likewise.
+	* src/elaboration.C (fiber_semantics): New.
+	(is_functoid): Define.
+	(elaborate_maybe_call): Adjust type.  Adjust caller.
+	(elaborate_call): Likewise.
+	(lookup_in_associated_scope): Likewise.
+	(include_associates): Likewise.
+	(restrict_with_type): Remove.
+	(type_equal): Likewise.
+	(elaborate_bisection): Rework.
+	* src/intrinsics.C (define_value): New.
+	(define_intrinsics): Use it.
+	(define_addressof_builtin): Likewise.
+	(define_deref_builtin): Likewise.
+	* src/overload.C (is_viable_function): Rename from is_viable_candidate.
+	(resolve_overload): Adjust type.  Adjust callers.
+	(match_and_coerce_arguments): Likewise.
+
+2013-01-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Fiber): New.
+	* src/elaboration.C (fiber_section): New.
+	(refer_by_name): Likewise.
+	(resolve_scope): Likewise.
+	(lookup_fiber): Likewise.
+	(lexical_fiber): Likewise.
+	(elaborate_identifier): Use them.  Tidy.
+	* src/Evaluator.C: Tidy Component evaluation.
+
+2013-01-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (StoreRef): New.
+	(EnvRef): Move to Environment.H.
+	(Namespace): Add runtime store representation.
+	* src/Elaborator.H (StoreStack): Move to Evaluator.H.
+	(Elaborator::get_store): Lose.
+	* src/Evaluator.H (Evaluator::get_store): New.
+	* src/Evaluator.C (lexical_or_global_var): New.
+	(evaluatue): Use it.
+
+2013-01-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Environment.H (Stack::top): New.
+	(Stack:bottom): Likewise.
+	* src/Evaluator.H (CallFrame): Likewise.
+	(ControlStack): Likewise.
+	(Evaluator::push_call_frame): Likewise.
+	(Evaluator::pop_call_frame): Likewise.
+	(Evaluator::current_call_frame): Likewise.
+	* src/Evaluator.C: Tidy.
+
+2013-01-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (EnvRef): Rename from ScopeRef.  Templatize.
+	(ScopeRef):  Now instance of EnvRef over Scope.
+
+2013-01-09  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Object.H: Move content to Expression.H.  Remove.
+	* src/Object.C: Move content to Expression.C.  Remove.
+
+2013-01-06  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Component): Now ternary structure.  Adjust users.
+	* src/Evaluator.C (read_component): New.
+	(SimpleEvalVisitor::visitor) [ReadExpression]: Use it.
+	(SimpleEvalVisitor::visitor) [Component]: New.
+	* src/Environment.H (Environment::select): Now const member function.
+
+2013-01-06  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Environment.H (Stack::iterator): Redefine.
+	(Stack::begin): New.
+	(Stack:end): Likewise.
+	(Stack::lexical_lookup): Adjust.
+
+2013-01-06  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (const_qualify): Remove.
+	(not_structure): Likewise.
+	(lookup_field): Likewise.
+	(finish_component): Likewise.
+	(finish_offset): Likewise.
+	(select_field): Likewise.
+	(elaborate_dot): Likewise.
+	(elaborate_binary): Adjust.
+	* src/Parser.C (selector_ops): Remove.
+	(is_operator): Adjust.
+
+2012-12-20  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (TagType): New.
+	* src/Type.C: Implement.
+
+2012-12-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::record_tok): New.
+	* src/Token.C (keyword_table): Include "record".
+	* src/Parser.C (parse_datatype): New.
+	(parse_postfix): Use it.
+	* src/Expression.H (DeclarativeScope): New.
+	(RecordType): New.  Use it.
+	(StructureType): Use DeclarativeScope.
+	* src/Ast.H (DatatypeAst): New.
+	* src/Ast.C: Implement.
+	* src/elaboration.C (elaborate_record): New.
+
+2012-12-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Div): New expression class.
+	(Rem): Likewise.
+	(Mod): Likewise.
+	(Percent): Remove.
+	* src/Evaluator.C: Propagate changes.
+	* src/Expression.C: Likewise.
+	* src/elaboration.C: Likewise.
+	* src/Elaborator.H (Elaborator::define_niladic_intrinsics): Remove
+	(Elaborator::define_unary_intrinsics): Likewise.
+	(Elaborator::define_binary_intrinsics): Likewise.
+	(Elaborator::define_intrinsics): New.
+	* src/Elaborator.C: Propagate changes.
+	* src/intrinsics.C: Likewise.
+
+2012-12-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_signature): New.
+	(parse_declaration):  Tidy.  Use it.
+	(parse_signature_sequence): New.
+	(parse_signature_block): Likewise.
+	(parse_recursive_specification): Likewise.
+	(parse_initializer): Use it.
+	* src/Ast.H (InductiveAst): New.
+	(CoinductiveAst): Likewise.
+
+2012-12-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (UserCtorAst): Remove.  Subsume with SignatureAst.
+	Adjust users.
+	(SignatureAst): Now a ternary structure.  Adjust users.
+	* src/Parser.C (parse_declaration): Adjust return type.
+	* src/elaboration.C (finish_user_ctor): New.
+	(elaborate_signature): Use it.
+	(elaborate_associated_ctor): Likewise.
+
+2012-12-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::struct_tok): Remove.
+	* src/Token.C: Propagate change.
+	* src/Parser.C: Likewise.
+
+2012-12-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::type_tok): Rename from token::typename_tok.
+	* src/Token.C: Propagate change.
+	* src/Parser.C: Likewise.
+
+2012-12-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C: Clean up.
+	(parse_implication): New.
+	(parse_expression): Use it.
+	(parse_quantified): New.
+	(finish_type_qualification): Likewise.
+	(parse_instantiation): Likewise.
+	(parse_tag_type): Likewise.
+	(parse_nontag_type): Likewise.
+	(parse_type): Rewrite.
+	(parse_parameter): Likewise.
+	(parse_sigtype): Remove.  Adjust callers.
+	(parse_alias): Remove.
+
+2012-12-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_guard): Remove as no longer called
+	for template code elaboration.
+	(is_conjunction): Remove as no longer used.
+
+2012-12-03  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/backend/cxx.C (cxx::Backend::translate_expr): Handle
+	liz::Component.
+	* src/Expression.H (Component): Change part type to Declaration.
+	* src/elaboration.C (finish_component): Propagate changes.
+	* src/Evaluator.C (SimpleEvalVisitor::visit)[ReadExpression]: Fix
+	thinko in lookup search.
+	* src/expression-io.C: Likewise.
+	* src/substitution.C: Likewise.
+
+2012-12-03  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Lambda): Rename from UserFunction.  Adjust users.
+
+2012-12-03  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Environment.H (Binding): Add new associated types.  Tidy.
+	(BindingOrdering): Rework.
+	(Environment): Reduce number of template parameters.  Tidy.
+	Adjust users.
+	(Stack): Likewise.
+	* src/Elaborator.H (Variable): New.
+	(Store): Use it.
+
+2012-12-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_initializer): Fix thinko introduced by last
+	modification to this function.
+
+2012-12-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Loop): New.
+	(WhileExpression): Remove as no longer used.
+	(DoExpression): Likewise.
+	* src/Expression.C: Propagate changes.
+	* src/expression-io.C: Likewise.
+	* src/substitution.C: Likewise.
+	* src/Evaluator.C: Likewise.
+
+2012-11-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (expr_stmt_or_assignment_tail): New.
+	(parse_simple_statement_or_assignment): Use it.  Tidy.
+	(parse_initializer): Likewise.
+	* src/Ast.H (AssignmentAst): New.
+	* src/Ast.C (AssignmentAst::AssignmentAst): Define.
+	(AstFactory::make_assignment): Likewise.
+	* src/Evaluator.C (ParameterMap::is_defined_at): New.
+	(SimpleEvalVisitor::visit(const ReadExpression&)): Rework.
+	* src/elaboration.C (elaborate_identifier): Simplify.  Always
+	generate lvalues with reference types.
+	(elaborate_assignment): New.
+	(Elaborator::elaborate): Use it.
+	* src/pretty-print.C (ExpressionPrettyPrintVisitor): Simplify
+	printing of LinkName.
+
+2012-11-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::Kind): Renmove for_ast, while_ast, until_ast and
+	proviso_ast as no longer needed.
+	* src/ast-io.C (ast_kind_name): Adjust.
+
+2012-11-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Function): Keep abstract.  Remove data members.
+	(Function::link_name): Declare pure virtual.
+	(Function::type): Overrride.
+	(Builtin<>): Adjust.
+	(UserFunction): Likewise.
+	* src/Evaluator.C: Propagate changes.
+	* src/Expression.C: Likewise.
+	* src/backend/cxx.C: Likewise.
+	* src/elaboration.C: Likewise.
+	* src/expression-io.C: Likewise.
+	* src/intrinsics.C: Likewise.
+	* src/substitution.C: Likewise.
+
+2012-11-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Lambda): Remove.
+	* src/Expression.C: Remove references to Lambda.
+	* src/expression-io.C: Likewise.
+	* src/substitution.C: Likewise.
+
+2012-11-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (ensure_unique_parameter): New.
+	(elaborate_parameters): Use it to ensure no-duplicates in a
+	parameter list.
+
+2012-11-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (ExpressionFactory::build_builtin): Rename
+	build_function overloads for builtin functions.
+	* src/Expression.C: Propagate changes.
+	* src/substitution.C: Likewise.
+	* src/intrinsics.C: Likewise.
+
+2012-11-22  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H: Remove FieldSelector and all references to it.
+	* src/Expression.C: Likewise.
+	* src/elaboration.C: Likewise.
+	* src/substitution.C: Likewise.
+
+2012-11-22  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (SelfValue): Remove.  Adjust derived classes.
+	(Value): Keep abstract.  Remove Value::type.
+
+2012-11-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Signature): No longer derive from Function. Tidy.
+	(ExpressionFactory::operator()): Remove overload for Signature.
+	* src/Expression.C: Propagate changes.
+	* src/elaboration.C: Likewise.
+	* src/expression-io.C: Likewise.
+	* src/substitution.C: Likewise.
+
+2012-11-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Function::target): Remove.  Adjust callers.
+	(Function::source): Likewise.
+	(Function::input_type): Likewise.
+
+2012-11-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (FunctionVariable): Remove.
+	* src/Expression.C: Remove references to FunctionVariable.
+	* src/Evaluator.C: Likewise.
+	* src/expression-io.C: Likewise.
+	* src/overload.C: Likewise.
+	* src/pattern.C: Likewise.
+	* src/substitution.C: Likewise.
+
+2012-11-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (finish_function): New.  Fatcorize out of
+	elaborate_function.
+	(elaborate_function): Use it.  Tidy.
+
+2012-11-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Data::to_function): New.
+	* src/Evaluator.C (EvaluationVisitor): Use it to evaluation functions.
+
+2012-11-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::Visitor::visit): Add overload of Ast to
+	implement defaults.  Have all other overloads default to this.
+	* src/Ast.C: Implement generic defaults.
+
+2012-11-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.C (invalid_ast_cast): Remove and all its users.
+
+2012-11-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (sorry_for_unimplemented): New.  Use it as
+	default elaboration for unimplemented cases.
+	(Elaborator::elaborate): Use a visitor for dispatch.
+
+2012-11-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Iterator): New.
+	(Iterator::Visitor): Likewise.
+	(ForIterator): Rename from ForAst.  Derive from Iterator.
+	No longer a derived class of Ast.  Adjust users.
+	(WhileIterator): Rename from WhileAst.  Derive from Iterator.
+	(UntilIterator): Rename from UntilAst.  Derive from Iterator.
+	(ProvisoIterator): Rename from ProvisoIterator.  Derive from Iterator.
+	* src/Ast.C: Propagate changes.
+	* src/ast-io.C: Likewise.
+	* src/Parser.C: Likewise.
+
+2012-11-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (MemberInitializerAst): Remove.
+	(MemInits): Likewise.
+	(Ast::Visitor::visit): Remove overload for MemberInitializerAst.
+	(AstFactory::make_member_initializer): Remove.
+	* src/Ast.C: Propagate changes.
+	* src/ast-io.C: Likewise.
+
+2012-11-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_identifier): Change second argument
+	type to a reference type.  Adjust callers.
+	(elaborate_operator): Likewise.
+
+2012-11-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (make_name): Declare.
+	* src/Expression.C (make_name): Define it.
+	* src/intrinsics.C: Use it.
+
+2012-11-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (FunctionElaboration): New.  Use it for unary
+	and binary calls.  Adjust specialized unary and binary expression
+	nodes.  Adjust callers.
+	* src/Elaborator.H (Elaborator::get_input_type): Change return
+	type to FunctionElaboration.  Adjust callers.
+	(Elaborator::get_type_eq): Likewise.
+	(finish_call_elaboration): Change second parameter type to
+	FunctionElaboration.  Adjust callers.
+	(match_and_coerce_arguments): Likewise.
+
+2012-11-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/overload.C (finish_call_elaboration): Tidy.
+
+2012-11-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/overload.C (build_niladic): Remove.
+	(build_user_function): Likewise.
+	(build_call): Fold into caller.  Remove.
+
+2012-11-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (TypeElaboration): Rework.
+
+2012-11-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Environment.H (Binding): Make the symbol a template parameter.
+	Adjust users.
+	(Environment): Likewise.
+	(Stack): Likewise.
+
+2012-11-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Logic.H: New.
+	* src/Expression.H: Move logic support classes there.
+
+2012-11-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (UserFunction;:parameter): Change return type
+	to const Formal*.  Adjust callers.
+
+2012-11-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (to_function_type): Remove.
+	Reshuffle a few declarations.
+	* src/Expression.C (Function::type): Tidy.
+	* src/Type.C (to_function_type): Remove.
+
+2012-11-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Type::Kind): Remove.
+	(type_impl<>::type_impl): Likewise.
+	* src/Type.C (Type::Type): Likewise.
+
+2012-11-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (to_generic_type): Remove.  Adjust callers.
+	* src/Expression.C (is_almost_function_type): Tidy.
+	(Template::type): Likewise.
+	* src/Type.C (to_generic_type): Remove.
+
+2012-11-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (to_reference_type): Remove.
+	* src/Type.C (to_reference_type): Likewise.
+	* src/elaboration.C (is_readonly_variant): Tidy.
+	(Elaborator::coerce): Likewise.
+	(deduce_pattern_formals): Likewise.
+
+2012-11-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (to_readonly_type): Remove.
+	* src/Type.C (format_readonly): Adjust.
+	(to_readonly_type): Remove.
+	(TypeFactory::make_readonly_type): Adjust.
+	* src/elaboration.C (is_readonly_variant): Likewise.
+	(deduce_pattern_formals): Likewise.
+
+2012-11-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (to_basic_type): Remove.
+	(to_lens): Likewise.
+	(to_pointer_type): Likewise.
+	(to_structure_type): Likewise.
+	(to_type_expression): Likewise.
+	* src/Expression.C: Remove associated implementations.
+
+2012-11-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_case_pattern): New,
+	(parse_case): Use it in place parse_parameter.
+	(parse_scrutinee): New.
+	(parse_switch): Use it in place of parse_condition.
+
+2012-11-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (zero_or_more): Adjust return type.
+	(parse_case_list): Likewise.  Adjust caller.
+	* src/Expression.H (Clause): New.
+	(Match): Likewise.
+	(Expression::Visitor::visit): Define overload for Match.
+	(ExpressionFactory::build_match): Define.
+	* src/Ast.H (SwitchAst): Tidy.
+	* src/Ast.C (SwitchAst::SwitchAst): Adjust type.
+	(AstFactory:make_switch): Likewise.
+	* src/elaboration.C (elaborate_case): New.
+	(elaborate_switch): Likewise.
+	(Elaborator::elaborate): Use it.
+
+2012-11-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Initial support for user-supplied implementation of symbolic
+	constructors.
+	* src/elaboration.C (elaborate_user_ctor): New.
+	(elaborate_variant): Use it to handle user-supplied constructor.
+	* src/Ast.H (Ast::user_ctor_ast): New.
+	(UserCtorAst): Likewise.
+	(Expression::Visitor::visit): Declare overload for UserCtorAst.
+	(AstFactory::make_user_ctor): Declare.
+	* src/Ast.C (UserCtorAst::UserCtorAst): Define.
+	(AstFactory::make_user_ctor): Likewise.
+	* src/Parser.C (parse_implementation): New.
+	(parse_declaration): Use it for user-supplied contructors.
+	* src/ast-io.C: Handle UserCtorAst.
+
+2012-11-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Type::array): Remove.
+	(Type::variant): New.
+	(Constructor): Tidy.
+	(VariantType): New.
+	(TypeFactory::make_variant_type): Declare.
+	* src/Expression.C (operator<<): Tidy formatting of Instance.
+	(Constructor::type): Define.
+	(Constructor::arity): Likewise.
+	(Expression::Visitor::visit): Define overload for VariantType.
+	* src/Type.C (VariantType::print_on): Define.
+	(TypeFactory::make_variant_type): Likewise.
+	* src/Elaborator.H (DeclContext): New.
+	(Elaborator::push_decl_context): Change argument type to DeclContext.
+	Adjust callers.
+	(Elaborator::top_decl_context): Change return type to DeclContext.
+	Adjust callers.
+	(Elaborator::get_union): Declare.
+	* src/Elaborator.C (Elaborator::get_union): Define.
+	* src/backend/cxx-format.C (type_specifier): Handle ExprAsType and
+	AnonType.
+	(absdecl_type_prefix): Likewise.
+	(primary_expr): Handle InstExpr.
+	(decl_printer): Handle TmpltDecl.
+	* src/backend/cxx.H (cxx::ExprAsType): New.
+	(cxx::AnonType): Likewise.
+	(cxx::InstExpr): Likewise.
+	(cxx::TmpltDecl): Likewise.
+	* src/backend/cxx.C (ExprAsType::ExprAsType): Define.
+	(AnonType::AnonType): Likewise.
+	(InstExpr::InstExpr): Likewise.
+	(TmpltDecl::TmpltDecl): Likewise.
+	(Decl::Visitor::visit): Define overload for TmpltDecl.
+	(Backend::translate): Handle "variant" and type expressions.
+	(Backend::translate_expr): Handle names and variant types.
+	(Backend::translate_template): Define.
+	(Backend::translate_ctor): Likewise.
+	(Backend::translate_variant_def): Likewise.
+
+2012-11-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Environment.H (Overload): Remove.
+	(Environment::BindingSet): New.
+	Use it in place of Overload<>.
+	* src/Expression.C: Likewise.
+	* src/Expression.H: Likewise.
+	* src/elaboration.C: Likewise.
+
+2012-11-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (BasicType::BasicType): Change argument type to
+	const SimpleName*.
+	(BasicType::name): Change return type to same.
+	(Module): Likewise.
+	* src/Elaborator.H (make_identifier): New.
+	* src/Elaborator.C: Propaate changes.
+	* src/elaboration.C: Likewise.
+	* src/expression-io.C: Likewise.
+	* src/Type.C: Likewise.
+	* src/Expression.C: Likewise.
+	* src/backend/cxx.C: Likewise.
+
+2012-11-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Name::base): Change return type to const
+	SimpleName*.
+	(Function::base_name): Likewise.
+	(Function::name): Likewise.
+	(Name::symbol): New.
+	(SimpleName::base): Override.
+	(QualifiedName::base): Likewise.
+	(LinkName::base): Liekwise.
+	* src/Evaluator.C: Propagate changes.
+	* src/elaboration.C: Likewise.
+	* src/Expression.C: Likewise.
+	* src/backend/cxx.C: Likwise.
+	* src/Elaborator.C: Likewise.
+	* src/expression-io.C: Likewise.
+	* src/substitution.C: Likewise.
+
+2012-11-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.C (finish_regular_concept): Don't prefix symbol
+	operator names by "operator".
+	* src/expression-io.C: Likewise.
+
+2012-11-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (new_class): New.
+	(elaborate_class): Use it.  Lose second parameter.  Tidy.
+	Adjust caller.
+	(new_namespace): New.
+	(elaborate_namespace): Use it.  Lose second parametere.  Tidy.
+	Adjust caller.
+	(elaborate_initializer): Change type of second parameter to const
+	Type*.  Tidy.  Adjust caller.
+	(elaborate_function): Use it.
+	(elaborate_definition): Tidy.
+	* src/Elaborator.H (Elaborator::top_decl_context): Declare.
+	* src/Elaborator.C (Elaborator::top_decl_context): Define.
+	* src/Expression.H (StructureType): Change type of name from
+	Symbol to general const Expression.
+	(Namspace): Likewise.
+	* src/Type.C: Propagate changes.
+	* src/backend/cxx.C (to_name): New.
+	(Backend::translate): Use it.
+
+2012-11-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* share:  New directory.
+	* share/liz.vim: Move from toplevel.
+
+2012-11-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::variant_tok): Rename from union_tok.
+	* src/Token.C (keyword_table): Replace union with variant.
+	* src/Parser.C (basic_type_tokens): Replace token::union_tok with
+	token::variant_tok.
+
+2012-11-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H: Remove references to ArrayType.
+	* src/Evaluator.C: Likewise.
+	* src/Expression.C: Likewise.
+	* src/pattern.C: Likewise.
+	* src/substitution.C: Likewise.
+	* src/expression-io.C: Likewise.
+	* src/backend/cxx.C: Likewise.
+	* src/Type.C: Likewise.
+
+2012-11-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.C (define_builtin_unary_ctors): New.
+	(define_builtin_binary_ctors): Likewise.
+	(define_builtin_constructors): Call them.
+	* src/intrinsics.C (convert_syntax_to_type): Move to Elaborator.H.
+	(intrinsic_array): Remove.
+	(binary_intrinsic_table): Remove array function data.
+	* src/Expression.C (operator<<): Separate contructor arguments by
+	comma.
+
+2012-11-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/intrinsics.C: Change "reference" to "ref".
+	* src/Type.C (ReferenceType::print_on): Likewise.
+	* src/Evaluator.C (IsClosedVisitor): Tidy.
+
+2012-11-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/backend/cxx.H (cxx::DerefExpr): New.
+	(cxx::NotExpr): Likewise.
+	(cxx::ComplExpr): Likewise.
+	(cxx::UnaryExpr): Remove.
+	* src/backend/cxx.C (UnaryExpr::UnaryExpr): Remove.
+	(NotExpr::NotExpr): Define.
+	(ComplExpr::ComplExpr): Likewise.
+	(DerefExpr::DerefExpr): Likewise.
+	(Backend::translate_expr): Translate Not, Complement, ReadExpression.
+	* src/backend/cxx-format.C: Propagate changes.
+
+2012-11-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.C (define_builtin_constructors): New,
+	(Elaborator::Elaborator): Call it.
+	* src/Expression.H (Instance): New.
+	(Constructor): Likewise.
+	(operator<<): Declare overload for formatting Instance objects.
+	* src/Expression.C (Instance::Instance): Define.
+	(operator<<): Define overload for formatting Instance objects.
+	(Constructor::Constructor): Define.
+	(Expression::Visitor::visitor): Define overload for Instance and
+	Constructor.
+	(ExpressionFactory::build_constructor): Define.
+	(ExpressionFactory::build_instance): Likewise.
+	* src/expression-io.C: Handle Instance.
+	* src/Evaluator.C (evaluate_expr): New overload for Instance
+	values.
+	(SimpleEvalVisitor): Use it to handle instantiations.
+	* src/Type.C (format_function): Tidy.
+	(TypeExpression::print_on): Print intelligibly if we have an
+	instantiation.
+
+2012-11-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/backend/cxx.C (build_binary_expr): Replace previous ugly
+	definition with simpler structured one.
+	(Backend::translate_expr): Override Expression::Visitor::visit for
+	each distinguished binary expression as originally intended.  Do
+	not write code when tired.
+	* src/backend/cxx.H (cxx::BinarExpr): Tidy.  Remember operator name.
+
+2012-11-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Add support for non-parameterized rules.
+	* src/Ast.H (RuleAst): New.
+	* src/Ast.C (RuleAst::RuleAst): Define.
+	(AstFactory::make_rule): Likewise.
+	* src/Parser.C (parse_rule): New.
+	(parse_statement): Use it.
+	* src/Expression.H (Value): Tidy.
+	(Macro): New.  Derive from SelfValue<>.
+	(Expression::Visitor::visit): Declare overload for Macro.
+	(ExpressionFactory::build_macro): Declare.
+	* src/Expression.C (Macro::Macro): Define.
+	(Expression::Visitor::visit): Define overload for Macro.
+	(ExpressionFactory::build_macro): Define.
+	* src/expression-io.C: Handle Macro.
+	* src/elaboration.C (make_reference_type): Tidy.
+	(valid_statement_at_nonlocal_scope): Accept RuleAst.
+	(resolve_identifier_value): Handle rules.
+	(elaborate_rule): New.
+	(Elaborator::elaborate): Call it.
+	* src/ast-io.C: Handle RuleAst objects.
+
+2012-11-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Compiler.C (get_cxx_output_path): Rename from
+	get_output_file.  Tidy.  Adjust caller.
+
+2012-11-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Compiler.C (Compiler::process_file): Use cxx::Backend.
+	* src/backend/cxx.H: New.
+	* src/backend/cxx.C: Likewise.
+	* src/backend/cxx-format.C: Likewise.
+	* src/Expression.H (format_toplevel): Remove declaration.
+	(BinaryExpression::lhs): Rename from first_argument.  Adjust users.
+	(BinaryExpression::rhs): Rename from second_argument.  Adjust users.
+	(BinaryLogical::lhs): Rename from first_argument.  Adjust users.
+	(BinaryLogical::rhs): Rename from second_argument.  Adjust users.
+	(Return::expression): Rename from expr.  Adjust users.
+	(BindExpression::type): New.
+	* src/substitution.C: Propagate name changes.
+	* src/pretty-print.C: Likewise.
+	* src/Evaluator.C: Likewise.
+	* src/pattern.C: Likewise.
+	* src/elaboration.C: Likewise.
+	* src/expression-io.C: Likewise.
+	* src/Ast.H: Likewise.
+	* src/cxx-format.C: Remove.
+	* src/Makefile.am (liz_SOURCES): Add backend/cxx.C and
+	backend/cxx-format.C.  Remove cxx-format.C.
+
+2012-11-07  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C: Replace most uses of is<> with get<>.
+
+2012-11-07  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::at_tok): New.
+	* src/Token.C (keyword_table): Remove token::auto_tok.
+	(is_delimiter): Handle '@'.
+	(TokenStream::tokenize): Likewise.
+	* src/Ast.H (Ast::restrict_ast): New,
+	(RestrictAst): Likewise.
+	* src/Ast.C (RestrictAst::RestrictAst): Define.
+	(AstFactory::make_restricted): Likewise.
+	* src/ast-io.C: Handle RestrictAst.
+	* src/Parser.C (basic_type_tokens): Remove token::auto_tok.
+	(parse_postfix): Allow type restriction.
+	(parse_type): Issue diagnostics if failure.
+	(parse_parameter): Use it.
+	(parse_arrow_type): Likewise.
+	(parse_quantified_type): Likewise.
+	(parse_sigtype): Likewise.
+	* src/elaboration.C (new_type_variable): Remove.
+	(is_auto): Likewise.
+	(elaborate_identifier): Don't call it.
+	(elaborate_restrict): New.
+	(Elaborator::elaborate): Use it.
+
+2012-11-07  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::then_tok): New.
+	(keyword_table): Add it.
+	* src/Parser.C (parse_condition): Tidy.
+	(parse_switch): Use it.
+	(parse_iterator): Likewise.
+	(parse_conditional): Likewise.  Tidy.
+	(parse_iterator_condition): Remove.
+
+2012-11-03  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_switch): The scrutinee is just a disjunction.
+
+2012-10-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H: Miscellaneous cleanup.
+	* src/Token.C: Likewise.
+	* src/Elaborator.C: Likewise.
+	* src/Elaborator.H: Likewise.
+	* src/utility.H: Likewise.
+	* src/pattern.C: Likewise.
+	* src/Data.H: Likewise.
+	* src/elaboration.C: Likewise.
+	* src/expression-io.C: Likewise.
+	* src/Type.C: Likewise.
+	* src/Ast.H: Likewise.
+	* src/logic.C: Likewise.
+	* src/Expression.C: Likewise.
+	* src/Expression.H: Likewise.
+	* src/overload.C: Likewise.
+	* src/intrinsics.C: Likewise.
+	* src/Parser.C: Likewise.
+	* src/Environment.H: Likewise.
+
+2012-10-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Path): Remove as duplicate.
+
+2012-10-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (is_string_literal): New.
+	(resolve_module_path): Use it.
+	* src/Parser.C (parse_string): New.
+	(parse_path): Use it.  Allow string literals as pathname.
+	* src/intrinsics.C (intrinsic_import): Remove as no longer needed.
+	(unary_intrinsic_table): "import" is no longer a function.
+	* src/expression-io.C (sexpr): Add overload for std::string.
+	Handle Import expressions.
+	* src/Evaluator.C (EvaluationVisitor): Handle Import.
+
+2012-10-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.H (Parser::at_eoi): Remove.
+	(Parser::next_token_is): Likewise.
+	(Parser::nth_token_is): Likewise.
+	(Parser::peek_token): Likewise.
+	(Parser::cursor): Rename from current.
+	(Parser::current): Now an accessor function.
+	* src/Parser.C (member): New.
+	(at_eoi): Now non-member function.  Adjust callers.
+	(current_token): Likewise.
+	(nth_token_is): Likewise.
+	(skip_blank): New return a token iterator.  Adjust callers.
+	(Parser::peek_token): Remove as unused.
+	(nth_token): New.
+	(Parser::advance): Define.
+	(is_operator): New.
+	(parse_operator_name): Likewise.
+	(parse_name): Likewise.
+	(parse_primary): Use it.
+
+2012-09-30  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (resolve_module_path): New.
+	(elaborate_import): New.  Use it.
+	(Elaborator::elaborate): Use it to elaborate import statements.
+	* src/Expression.H (Import): New.
+	* src/Expression.C (Import::Import): Define.
+	(Expression::Visitor::visit): Define overload for Import.
+	(ExpressionFactory::build_import): Define.
+	* src/cxx-format.C: Handle Import expressions.
+
+2012-09-29  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (PathAst): New.
+	(AstFactory::make_path): Declare.
+	* src/Ast.C (PathAst::PathAst): Define.
+	(AstFactory::make_path): Likewise.
+	* src/elaboration.C (quote): Change type.  Adjust callers.
+	* src/ast-io.C: Handle PathAst.
+
+2012-09-29  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (Elaborator::elaborate): Sorry for
+	unimplemented feature, not semantics error.
+
+2012-09-29  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_path_item): New.
+	(parse_path): Use it to accept reserved words.
+
+2012-09-28  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (ImportAst): New.
+	(Ast::import_ast): Likewise.
+	(AstFactory::make_import): Declare.
+	(Ast::Visitor::visit): Add overload for ImportAst.
+	* src/Ast.C (ImportAst::ImportAst): Define.
+	(AstFactory::make_import): Likewise.
+	* src/Parser.C (parse_path): New.
+	(parse_import): Likewise.
+	(parse_toplevel): Likewise.
+	(parse_module): Use it.
+
+2012-09-28  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_symbol): Rename from parse_operator.  Adjust
+	callers.
+
+2012-09-28  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/pattern.C: Use modern syntax for null pointer constant.
+	* src/Parser.C: Likewise.
+	* src/Expression.H: Likewise.
+	* src/expression-io.C: Likewise.
+	* src/Expression.C: Likewise.
+	* src/storage.H: Likewise.
+	* src/storage.C: Likewise.
+	* src/ast-io.C: Likewise.
+	* src/Ast.H: Likewise.
+	* src/Token.C: Likewise.
+	* src/substitution.C: Likewise.
+	* src/overload.C: Likewise.
+	* src/Compiler.C: Likewise.
+	* src/Evaluator.C: Likewise.
+
+2012-09-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H: Remove SymbolicReference and any reference to it.
+	* src/expression-io.C: Likewise.
+	* src/Expression.C: Likewise.
+	* src/pretty-print.C: Likewise.
+	* src/cxx-format.C: Likewise.
+	* src/intrinsics.C: Likewise.
+	* src/elaboration.C: Likewise.
+	* src/Evaluator.C: Likewise.
+	* src/substitution.C: Likewise.
+
+2012-09-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (ExpressionFactory::build_name): Declare.
+	* src/Expression.C (ExpressionFactory::build_name): Define.
+	* src/intrinsics.C: Adjust usage of build_name.
+	* src/elaboration.C: Likewise.
+	(build_name): Remove unnecessary overload.
+	* src/Elaborator.H (build_name): Remove declaration.
+
+2012-09-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (DotAst): Adjust.  Do not require member to be an
+	identifier.
+	* src/Ast.C (DotAst::DotAst): Adjust.
+	(AstFactory::make_dot): Likewise.
+	* src/elaboration.C (base_name): New.
+	(lookup_name): Rewrite.
+	* src/Parser.C (parse_primary): Fix thinko from last commit.
+
+2012-09-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (ast_impl): Tidy.
+	(Ast::Visitor): New visitor base class for AST objects.
+	* src/ast-io.C: Use it to s-print AST objects.  Remove references
+	to FormalAst.
+	* src/Ast.C: Remove references to FormalAst.
+	* src/Parser.C (parse_formal): Remove.
+	(parse_name): Likewise.
+	(parse_fullname): Likewise.
+	(parse_primary): Adjust.
+
+2012-09-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H: Remove to_ conversion functions.
+	(get): New template checked conversion function.
+	* src/ast-io.C: Use get<> function instead old to_ conversion
+	functions.
+	* src/elaboration.C: Likewise.
+
+2012-09-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/utility.H: Use alias notation for type aliases.
+	(Triple): Remove.
+	(debug::has): Make constexpr.
+	* src/storage.H (Factory): Use alias notation for type aliases.
+	(Factory::make): Remove 4 overloads and replace with
+	variadic template variants.
+	(FileMapping): Declare copy constructor and assignment deleted.
+
+2012-09-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::char_type): New.
+	(token::kind_value): Likewise.
+	(token::value): Likewise.  Replace macros LIZ_TOKEN{1,2,3}.
+	(LIZ_TOKEN{1,2,3}): Remove.
+	(token::Kind): Adjust.
+	(kind): New.  Define 2 overloads as constructor functions.
+	* src/Token.C (token::operator<<): Adjust.
+	(TokenStream::tokenize_numbers): Likewise.
+	(TokenStream::tokenize_operator): Likewise.
+
+2012-09-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Makefile.am (liz_cxx_flavor): New.
+	(AM_CXXFLAGS): New.  Include it.
+
+2012-09-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (TemplateId): Remove.  Remove all refereneces.
+	* src/Expression.C: Remove references to TemplateId.
+	* src/expression-io.C: Likewise.
+	* src/substitution.C: Likewise.
+
+2012-09-26  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Elaborate bisections.
+	* src/elaboration.C (quote): Add overload for OperatorAst.
+	(restrict_by): Factor out of restrict_candidates.
+	(target_equal): New.
+	(restrict_with_target): Use it.  Rename from restrict_candidates.
+	(elaborate_brace):  Adjust.
+	(type_equal): New.
+	(restrict_with_type): Likewise.
+	(elaborate_bisection): Likewise.
+	(Elaborator::elaborate):  Handle BiSectionAst.
+
+2012-09-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (CallExpression): The function being called can
+	be given by an aribitrary expression.  Adjust.
+	(is_niladic): New.
+	(is_unary): Likewise.
+	(is_binary): Likewise.
+	(to_niladic): Remove.
+	(to_unary): Likewise.
+	(to_binary): Likewise.
+	(Expression::build_call): Adjust first argument type.
+	* src/Evaluator.C (IsSimpleVisitor): Adjust.
+	(IsClosedVisitor): Likewise.
+	(EvaluationVisitor): Likewise.
+	* src/Expression.C (CallExpression&::CallExpression&): Likewise.
+	(to_niladic): Remove.
+	(to_unary): Likewise.
+	(to_binary): Likewise.
+	* src/overload.C (build_niladic): Adjust.
+	(build_user_function): Likewise.
+	* src/substitution.C (InstantiatorVisitor): Adjust.
+	(SignatureSubstitutionVisitor): Likewise.
+	* src/pattern.C (PatternMatchVisitor): Likewise.
+	* src/cxx-format.C (PostfixFormatter): Likewise.
+
+2012-09-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (elaborate_call): Remove essentially duplicate
+	declaration.
+	* src/overload.C (elaborate_call): Remove essentially duplicate
+	definition.
+
+2012-09-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::goto_tok): Remove.
+	* src/Token.C (keyword_table): Remove "goto" entry.
+	* src/Ast.H (Ast::goto_ast): Remove.
+	* src/ast-io.C (ast_kind_name): Remove "%goto" entry.
+	* src/Parser.C (parse_goto): Remove.
+	(parse_control_statement): Adjust.
+
+2012-09-19  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Namespace): Now derives from Type.
+	(TypeFactory::make_namespace): Declare.
+	* src/Evaluator.C (TypeEvaluator): Handle Namespace.
+	* src/elaboration.C (elaborate_namespace): Adjust.
+	* src/Expression.C (Expression:::Visitor::visit): Adjust overload
+	for Namespace.
+	* src/Elaborator.C (Elaborator::Elaborator): Adjust.
+
+2012-09-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (is_named_scope): Simplify.
+	(resolve_scope): New.
+	(lookup_name): Use it.  Simplify.
+	* src/Ast.H (Ast::dot_ast): New.
+	(DotAst): Define.
+	(to_dot): Declare.
+	(AstFactory::make_dot): Likewise.
+	* src/Ast.C (DotAst::DotAst): Define.
+	(to_dot): Likewise.
+	(AstFactory::make_dot): Likewise.
+	* src/ast-io.C: Handle DotAst.
+	* src/Parser.C (parse_postfix): Build DotAst Ast objects.
+	* src/Elaborator.H (simplify): Remove.
+
+2012-09-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (valid_statement_at_nonlocal_scope): Tidy.
+	(elaborate_definition): Likewise.
+	(elaborate_formula): Likewise.
+
+2012-09-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::template_ast): Remove.
+	(Ast::kind): Now a virtual function.
+	(ast_impl): New.  Implement Ast::kind.  Use it as base class
+	for all ast classes.  Adjust definitions.
+	(ConstructorAst): Remove.
+	(TemplateAsr): Likewise.
+	(to_template): Likewise.
+	(to_constructor): Likewise.
+	* src/ast-io.C: Propagate changes.
+	* src/elaboration.C (elaborate_type): Adjust.
+	(lookup_name): Likewise.
+	(get_arguments): Likewise.
+	(only_identifier): Likewise.
+	(valid_statement_at_nonlocal_scope): Likewise.
+	(get_block_or_else): Likewise.
+	(elaborate_class): Likewise.
+	(elaborate_object_initializer): Likewise.
+	(elaborate_definition): Likewise.
+	(is_conjunction): Likewise.
+	(elaborate_formula): Likewise.
+	(elaborate_source_file): Likewise.
+	(Elaborate::elaborate): Likewise.
+	(bind_generic_instance): Remove.
+	(select_decl): Likewise.
+	(elaborate_template): Likewise.
+	* src/Translator.H (Translator::elaborate): Lose last parameter.
+
+2012-09-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (DeclAst): Remove.
+	(ParameterAst): Simplify.
+	(AstFactory::make_parameter): Adjust signature.
+	* src/Ast.C (DeclAst::DeclAst): Remove.
+	(ParameterAst::ParameterAst): Define.
+	(AstFactory::make_parameter): Adjust.
+	* src/Parser.C (parse_parameter): Likewise.
+	* src/ast-io.C (sexpr): Remove overload for DeclAst.
+
+2012-09-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/expression-io.C: Tidy formatting.
+
+2012-09-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/intrinsics.C: Symbolic operators no longer need the prefix
+	"operator".
+	* src/elaboration.C: Likewise.
+
+2012-09-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/expression-io.C: Really add.
+
+2012-09-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.C: Move prefix_form functions to expression-io.C.
+	* src/expression-io.C: New.
+	* src/Makefile.am (liz_SOURCES): Add it.
+
+2012-09-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_return): Fix thinko.
+
+2012-09-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/ast-io.C (sexpr): Move generic overloads to sexpr-io.H
+	* src/sexpr-io.H: New.
+	* src/Output.H: Proteted against multiple includes.
+
+2012-09-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Parse bi-sections and right-sections.
+	* src/Parser.C (parse_parenthesis): New.
+	(parse_prefix_operand): Factor out of parse_prefix.
+	(parse_prefix): Use it.
+	(binary_ops): New.
+	(parse_binary_operator): Likewise.
+	(get_right_operand_parser): Likewise.
+
+2012-09-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::bisection_ast): New.
+	(Ast::left_section_ast): Likewise.
+	(Ast::right_section_ast): Likewise.
+	(BiSectionAst): Likewise.
+	(LeftSectionAst): Likewise.
+	(RightSectionAst): Likewise.
+	(to_bisection): Declare.
+	(to_left_section): Likewise.
+	(to_right_section): Likewise.
+	(AstFactory::make_bisection): Likewise.
+	(AstFactory::make_left_section): Likewise.
+	(AstFactory::make_right_section): Likewise.
+	* src/Ast.C (BiSectionAst::BiSectionAst): Define.
+	(LeftSectionAst::LeftSectionAst): Likewise.
+	(RightSectionAst::RightSectionAst): Likewise.
+	(to_bisection): Likewise.
+	(to_left_section): Likewise.
+	(to_right_section): Likewise.
+	(AstFactory::make_bisection): Likewise.
+	(AstFactory::make_left_section): Likewise.
+	(AstFactory::make_right_section): Likewise.
+	* src/ast-io.C: Handle BiSectionAst, LeftSectionAst, RightSectionAst.
+
+2012-09-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (print_assumption_set): Move to logic.C
+	* src/logic.C: New.
+	* src/Makefile.am (liz_SOURCES): Include it.
+
+2012-09-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Partial fix for Ticket #4; accept fields with default values.
+	* src/elaboration.C (elaborate_field): New overload for definitions.
+	(elaborate_class): Use it.  Accept fields with default values.
+	* src/testsuite/elaboration/4.liz: New.
+
+2012-09-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Finish Elaborator::elaborate cleanup.
+	* src/elaboration.C (elaborate_expr_stmt): New.  Factor out of
+	Elaborator::elaborator.
+	(Elaborator::elaborator): Adjust.
+
+2012-09-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (Elaborator::elaborator): Move binary
+	expression elaborations to elaborate_binary.
+	(elaborate_binary): Adjust.
+
+2012-09-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (Elaborator::elaborate): Move unary
+	expression elaborations to elaborate_unary.
+	(elaborate_unary): Adjust.
+
+2012-09-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::expr_stmt_ast): New.
+	(ExprStmtAst): Likewise.
+	(to_expr_stmt): Declare.
+	(AstFactory::make_expr_stmt): Likewise.
+	* src/Ast.C (ExprStmtAst::ExprStmtAst): Define.
+	(to_expr_stmt): Likewise.
+	(AstFactory::make_expr_stmt): Likewise.
+	* src/ast-io.C: Handle ExprStmtAst.
+	* src/Parser.C (parse_simple_statement_or_assignment): Build
+	ExprStmtAst for expression statements.
+	(parse_initializer): Likewise.
+	* src/elaboration.C (valid_statement_at_nonlocal_scope): Say what
+	you mean.
+	(Elaborator::elaborate): Expression statements are no longer unary
+	expressions.  Explicitly handle ExprStmtAst.
+
+2012-09-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix long standing hacks that abused unary expression trees to
+	represent exit expressions.
+	* src/Ast.H (Ast::leave_ast): New.
+	(Ast::throw_ast): Likewise.
+	(ReturnAst): Likewise.
+	(LeaveAst): Likewise.
+	(ThrowAst): Likewise.
+	(to_return): Declare.
+	(to_leave): Likewise.
+	(to_throw): Likewise.
+	(AstFactory::make_return): Likewise.
+	(AstFactory::make_leave): Likewise.
+	(AstFactory::make_throw): Likewise.
+	* src/Ast.C (ReturnAst::ReturnAst): Define.
+	(LeaveAst::LeaveAst): Likewise.
+	(ThrowAst::ThrowAst): Likewise.
+	(to_return): Likewise.
+	(to_leave): Likewise.
+	(to_throw): Likewise.
+	(AstFactory::make_return): Likewise.
+	(AstFactory::make_leave): Likewise.
+	(AstFactory::make_throw): Likewise.
+	* src/Parser.C (exit_ops): Remove.
+	(parse_exit): Rewrite in more verbose form.
+	* src/ast-io.C: Handle ReturnAst, LeaveAst, and ThrowAst.
+	* src/elaboration.C (Elaborator::elaborate): A return expression
+	is no longer a unary expression.  Add case for Ast::return_ast.
+
+2012-09-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_literal): Factor out of
+	Elaborator::elaborate.
+	(Elaborate::elaborate): Call it.
+
+2012-09-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (type_elaboration): Declare.
+	(get_binary_predicate_type): Likewise.
+	* src/Expression.H (lookup_function): Likewise.
+	* src/elaboration.C (Elaborator::Elaborator): Move definition and
+	used functions to Elaborator.C.
+
+2012-09-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C: Move definition of many Elaborator member
+	functions to Elaborator.C.
+
+2012-09-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.H (ErrorAt): New.
+	(ParseErrorAt): Remove.
+	(error_at): Declare.
+	* src/Parser.C (ErrorAt): Define member functions.
+	(error_at): Define.
+	* src/elaboration.C (valid_statement_at_nonlocal_scope): New.
+	(filter_nonlocal_statement): Likewise.
+	(elaborate_class): Use it.
+	(elaborate_namespace): Likewise.
+
+2012-09-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.C (TokenStream::tokenize): Stabilize reference to line
+	before starting tokenizing.
+
+2012-09-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix Ticket #5.  Parse "namespace" as a basic type.
+	* src/Parser.C (basic_type_tokens): Add token::namespace_tok.
+	* src/elaboration.C (Elaborator::define_builtin_types): Define
+	"namespace" as builtin types reachable by name lookup.
+	(elaborate_namespace): Record result of elaboration.
+	* src/cxx-format.C (is_toplevel_scope): New.
+	(format_cxx_decl): Use it.
+	(DeclarationFormatter::visit): Define overload for Namespace.
+	(CxxFormatVisitor::visit): Likewise.
+	* src/Expression.H (ToplevelScope::region): Rename from
+	ToplevelScope::declarative_region.  Adjust users.
+	(ToplevelScope::statement): Declare.
+	(ToplevelScope::add_stmt): Likewise.
+	(ToplevelScope::stmt_count): New.
+	* src/Expression.C (ToplevelScope::statement): Define.
+	(ToplevelScope::add_stmt): Likewise.
+	(prefix_form): Define new overload for Namespace.
+	(PrefixFormVisitor::visit): Likewise.
+	* src/testsuite/elaboration/5.liz: New.
+	* src/testsuite/parser/5.liz: Likewise.
+
+2012-09-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/ast-io.C (sexpr): Overload for SourceFileAst.
+	* src/Ast.H (Fragment): New.  Factor from SourceFileAst.
+	(SourceFileAst): Derive from it.
+	* src/Ast.C (Fragment::ast): Rename from SourceFileAst::ast.
+	(SourceFileAst::SourceFileAst): Tidy.
+	(AstFactory::make_source_file): Adjust.
+	* src/Token.H (Line): Tidy.
+	(TokenStream): Likewise.
+	* src/Token.C (Line::Line): Adjust.
+	(TokenStream::tokenize): Remember the line; return self.
+	* src/Evaluator.C (Evaluator::toplevel_loop): Clean up.
+	* src/elaboration.C (elaborate_source_file): Adjust.
+	* src/Parser.H (Parser::parse): Change first parameter type.
+	(Reader::read): Take an additional parameter.
+	* src/Parser.C (parse_module): Take a third argument serving as
+	sink for newly created ASTs.  Adjust return type.
+	(Parser::parse):  Adjust type.  Tidy.
+	(Reader::read): Likewise.
+	(Reader::read_file): Likewise.
+
+2012-09-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.H (ParseErrorAt::ParseErrorAt): Remove overload with
+	two arguments, unused.
+	* src/Parser.C (ParseErrorAt::ParseErrorAt): Remove definition.
+	(ParseErrorAt::issue_on): Tidy; print column number.
+
+2012-09-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Ticket #3.
+	* src/Compiler.C (Compiler::process_file): Attend to the FIXME
+	that asked to check for no-ops.
+	* src/testsuite/cxx-output/3.liz: New.
+
+2012-09-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (Elaborator::frame_depth): Declare.
+	* src/elaboration.C (Elaborator::frame_depth): Define.
+	(elaborate_return): New.  Use it.  Check for function scope.
+	(Elaborator::elaborate): Call it.
+	* src/testsuite/elaboration/2.liz: New.
+
+2012-09-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix elaboration issue in Ticket #1.
+	* src/elaboration.C (get_block_or_else): Handle empty block.
+	* src/testsuite/elaboration/1.liz: New.
+
+2012-09-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Fix parse issue in Ticket #1.
+	* src/Parser.C (parse_initializer): Fix thinko; the closing brace
+	was already seen.
+	* src/testsuite/parser/1.liz: New.
+
+2012-09-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (RestrictedType): New.
+	(TypeFactory::make_restricted_type): Declare.
+	(Expression::Visitor::visit): Declare overload for RestrictedType.
+	* src/Expression.C (Expression::Visitor::visit): Define overload
+	for RestrictedType.
+	* src/elaboration.C (elaborate_restricted_type): New.
+	(elaborate_type): Use it.  Tidy.
+	* src/Type.C (RestrictedType::RestrictedType): Define.
+	(RestrictedType::print_on): Likewise.
+	(RestrictedType::formatter): Likewise.
+	(TypeFactory::make_restricted_type): Likewise.
+
+2012-09-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::filter_ast): New.
+	(FilterAst): Likewise.
+	(AstFactory::make_filter): Declare.
+	(to_filter): Likewise.
+	* src/Parser.C (parse_sigtype): New.
+	(parse_declaration): Use it.
+	(parse_definition): Likewise.
+	* src/ast-io.C (ast_kind_name): Add %filter.
+	(prefix_form): Handle FilterAst.
+	* src/Ast.C (FilterAst::FilterAst): Define.
+	(to_filter): Likewise.
+	(AstFactory::make_filter): Likewise.
+
+2012-09-02  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_enclosed): New.
+	(parse_enclosure): Tidy.  Use it.  Extend to collect expressions.
+	(parse_for_iterator): New.
+	(parse_iterator): Use it.
+	* src/Token.H (token::if_tok): New.
+	(token::for_tok): Likewise.
+	* src/Token.C (keyword_table): Include "in" and "for".
+	(TokenStream::tokenize_numbers): Tidy floating point syntax.
+	(TokenStream::tokenize): Likewise.
+	* src/Ast.H (Ast::collect_ast): New.
+	(Ast::for_ast): Likewise.
+	(CollectAst): New.
+	(ForAst): Likewise.
+	(to_collect): Declare.
+	(to_for): Likewise.
+	(AstFactory::make_for): Likewise.
+	(AstFactory::make_collect): Likewise.
+	* src/Ast.C (CollectAst::CollectAst): Define.
+	(ForAst::ForAst): Likewise.
+	(to_interval): Likewise.
+	(to_for): Likewise.
+	(to_collect): Likewise.
+	(AstFactory::make_for): Likewise.
+	(AstFactory::make_collect): Likewise.
+	* src/ast-io.C: Format new AST classes.
+
+2012-09-01  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::interval_ast): New.
+	(Ast::until_ast): Likewise.
+	(Ast::proviso_ast): Likewise.
+	(Ast::do_ast): Rwmove.
+	(Ast::break_ast): Likewise.
+	(IntervalAst): New.
+	(UntilAst): Likewise.
+	(ProvisoAst): Likewise.
+	(RepeatAst): Likewise.
+	(WhileAst): Tidy.
+	(DoAst): Remove.
+	(BreakAst): Likewise.
+	(to_do): Remove.
+	(to_break): Likewise.
+	(to_interval): Declare.
+	(to_until): Likewise.
+	(to_repeat): Likewise.
+	* src/Ast.C (IntervalAst::IntervalAst): Define.
+	(WhileAst): Tidy.
+	(DoAst::DoAst): Remove.
+	(UntilAst::UntilAst): Define.
+	(ProvisoAst::ProvisoAst): Likewise.
+	(RepeatAst::RepeatAst): Likewise.
+	(to_break): Remove.
+	(to_do): Likewise.
+	(to_until): Define.
+	(to_repeat): Likewise.
+	(to_proviso): Likewise.
+	(AstFactory::make_interval): Define.
+	(AstFactory::make_repeat): Likewise.
+	(AstFactory::make_do): Remove.
+	(AstFactory::make_break): Likewise.
+	(AstFactory::make_while): Tidy.
+	* src/ast-io.C: Propagate AST hierarchy changes.
+	* src/Token.H (token::colon_equal_tok): New.
+	(token::dot_dot_tok): Likewise.
+	(token::until_tok): Likewise
+	(token::leave_tok): Likewise.
+	* src/Token.C (keyword_table): Include "until" and "leave".
+	(digraph_info): Clean up.
+	* src/Parser.C (parse_interval): New.
+	(parse_exit): Use it.
+	(exit_ops): Include token::leave_tok.
+	(parse_expression): Adjust.
+	(parse_break): Remove.
+	(parse_do): Likewise.
+	(parse_while): Likewise.
+	(parse_iterator_condition): New.
+	(parse_iterator): Likewise. Use it.
+	(parse_loop): Likewise.
+	(parse_control_statement): Likewise.  Adjust.
+	* src/substitution.C (InstantiatorVisitor::visit): Remove overload
+	for Break.
+	(SignatureSubstitutionVisitor::visit): Likewise.
+	* src/Expression.H (Break): Remove.
+	(Expression::Visitor::visit): Remove overload for Break.
+	(ExpressionFactory::build_break): Remove.
+	* src/Evaluator.C (EvaluationVisitor::visit): Remove overload for
+	Break.
+	* src/elaboration.C (elaborate_loop): Remove.
+	(Elaborator::elaborate): Do not call them. Remove case for Break.
+	* src/Expression.C (Expression::Visitor::visit): Remove overload
+	for Break.
+	(ExpressionFactory::build_break): Remove.
+	(PrefixFormVisitor): Remove Break case.  Print linkage name for
+	bind expressions.
+
+2012-09-01  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* misc/liz.m4 (LIZ_SUPPORT_LIBRARIES): New.
+	(configure.ac): Call it.
+
+2012-08-31  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_goto): Do not require presence of "goto".
+	(require_operator): Remove as unused.
+
+2012-08-29  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::left_arrow_tok): New.
+	(token::right_arrow_tok): Rename from token::arrow_tok.
+	* src/Token.C (digraph_info): Update.
+	* src/Parser.C (selector_token_types): Update.
+	(parse_arrow_type): Likewise.
+
+2012-08-29  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (literal_boolean_tok): Rename from boolean_tok.
+	(literal_character_tok): Rename from character_tok.
+	(literal_string_tok): Rename from string_tok.
+	(literal_real_tok): Rename from real_tok.
+	(operator_tok): Remove.
+	(repeat_tok): New.
+	* src/Token.C: Likewise.
+	* src/elaboration.C: Propagate changes.
+	* src/Parser.C: Likewise.
+	(fuse_token): Remove.
+	(parse_brace_name): Likewise.
+	(parse_operator): Likewise.
+
+2012-08-27  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (left_associative): Add overload for one operator.
+	(right_associative): Likewise.
+	(parse_suffix): New.
+	(parse_exponentiation): Likewise.
+	(parse_qualified): Use it.
+	(parse_conjunction): Simplify.
+	(parse_disjunction): Likewise.
+	(parse_assumption): The condition is now an assumption.
+	* src/Token.H (token::exclamation_tok): New.
+	(token::carret_tok): Likewise.
+	* src/Token.C (operator<<): Simplify.
+
+2012-08-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Assumption): Derive from structure::unary
+	instance.  Tidy.  Adjust users.
+	(Axiom): Remove.  Adjust users.
+	(to_axiom): Likewise.
+	(ExpressionFactory::build_axiom): Likewise.
+
+2012-08-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Formula): Derive from structure::ternary instance.
+	Tiidy.  Adjust users.
+	(ExpressionFactory::operator()): Remove unneeded overload.
+
+2012-08-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (IfExpression): Derive from
+	structure::ternary.  Tidy.
+	(ExpressionFactory::operator()): Remove unneeded overload.
+
+2012-08-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (logical::Operation): Move out of BinaryLogical.
+	(BinaryLogical): Tidy.  Derive from structure::ternary.  Adjust users.
+
+2012-08-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (ExpressionSequence): Remove.  Adjust users.
+	(Construction): Likewise.
+
+2012-08-25  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/cxx-format.C (CxxFormatVisitor): Handle Initializer.
+	* src/Expression.H (Initializer): New,
+	(ExpressionFactory::build_initializer): Declare.
+	* src/elaboration.C (get_arguments): Tidy.
+	(elaborate_object_initializer): New.
+	(elaborate_initializer): Tidy.
+	* src/Expression.C (Initializer::Initializer): Define.
+	(ExpressionFactory::build_initializer): Likewise.
+	* src/Elaborator.C (Elaborator::get_address): Define.
+	* src/Token.C (keyword_table): Include "rule", "import", "public",
+	and "private".
+	* src/Token.H (token::Kind): Add rule_tok, import_tokp,
+	public_tok, and private_tok.
+
+2012-08-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (Elaborator::get_address): New.
+	(Elaborator::define_builtin_types): define "address" builtin type.
+	(Elaborator::Elaborator): Initialize address_type.
+
+2012-08-23  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Type::quantified): Rename from Type::generic.
+	Adjust users.
+	(quantifier::Kind): New.
+	(quantifier::operaor<<): Declare.
+	(QuantifiedType): New.
+	(TypeFactory::operator()): Overload for structure::ternary.
+	(TypeFactory::make_quantified_type): Declare.
+	(Expression::Visitor::visit): Declare overload for QuantifiedType.
+	* src/Parser.C (parse_type): Tidy.
+	(parse_quantified_type): Fix thinko.
+	* src/Evaluator.C (TypeEvaluator): Evaluate QuantifiedType.
+	* src/Expression.C (quantifier::operator<<): Define.
+	(Formula::Formula): Tidy.
+	(Expression::Visitor::visit): Define overload for QuantifiedType.
+	* src/elaboration.C (finish_regular_concept): Tidy.
+	(do_elaborate_quantified_type): New.
+	(elaborate_quantified_type): Likewise.
+	(elaborate_type): Use it to elaborate quantified types.
+	(elaborate_quantifier): New.
+	(elaborate_formula): Tidy.
+	(new_type_variable): Likewise.
+	* src/Type.C (GenericType): Tidy.
+	(QuantifiedType::QuantifiedType): Define.
+	(QuantifiedType::formal): Likewise.
+	(format_formals): New.
+	(QuantifiedType::print_on): Define.
+	(to_generic_type): Tidy.
+	(TypeFactory:make_quantified_type): Define.
+
+2012-08-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Output.H (operator<<): Now Output member functions.
+	(Output::line_length): New.
+	* src/Output.C: Propagate changes.
+	* src/elaboration.C (make_elaboration): Remove unused overload.
+	(lookup_field): Change return type.  Tidy.  Adjust callers.
+	(finish_component): Likewise.
+	(finish_offset): Likewise.
+	* src/Compiler.C (compile_cxx_file): Fix thinko.
+	(Compiler::process_file): Tidy.
+	* src/cxx-format.C (format_selected_member): Tidy.
+	* src/ast-io.C (max_line_length): New.
+	(external_length): Likewise.
+	(sexpr): Use them.
+	* src/Makefile.am (liz_SOURCES): Remove mention of named-scope.C.
+
+2012-08-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Field): Tidy.
+	(StructureType): Likewise.
+	(ExpressionFactory::build_field): Adjust type.
+	* src/Elaborator.H (elaborate_class): Remove declaration.
+	(elaborate_namespace): Likewise.
+	* src/Type.C: Propagate changes.
+	* src/Expression.C: Likewise.
+	* src/cxx-format.C (DeclarationFormatter): Handle Field.
+	* src/named-scope.C: Fold content back to src/elaboration.C again.
+	Remove.
+
+2012-08-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Sequence): Tidy.
+	* src/ast-io.C (sexpr): Likewise.
+	* src/Parser.C (parse_initializer): New.
+	(parse_definition): Use it.  Tidy.
+	* src/Compiler.C (Compiler::process_file): Remove redundant
+	debuggin notes.
+	* src/elaboration.C (Elaborator::define_builtin_types): Define
+	"struct" as a basic type.
+
+2012-08-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/cxx-format.C (PrimaryFormatter): Handle Formal.
+	(format_cxx_fundecl): Output return statement if body is not a Block.
+	* src/Evaluator.H (Evaluator::eval): Add a Flags parameter.
+	(Evaluator::evaluate_toplevel): Likewise.
+	* src/Evaluator.C (Evaluator::eval): Adjust parameter list.
+	(Evaluator::evaluate_toplevel): Likewise.
+	(Evaluator::toplevel_loop): Tidy.
+	(Evaluator::process_file): Likewise.
+	* src/Compiler.C (Compiler::process_file): Likewise.
+
+2012-08-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/intrinsics.C (define_addressof_builtin): Simplify.
+	(define_deref_builtin): Likewise.
+	(Elaborator::define_binary_intrinsics): Tidy.
+	* src/substitution.C (substitute): Tidy.
+	(InstantiatorVisitor): Likewise.
+	* src/Expression.H (Formals): New.
+	(abstraction<>): Use it.
+	(GenericType): Tidy up.
+	(Axiom): Likewise.
+	(Formula): Likewise.
+	(UserFunction): Likewise.
+	(TypeFactory::make_generic_type): Adjust type.
+	(ExpressionFactory::build_function): Likewise.
+	(ExpressionFactory::build_formula): Likewise.
+	(ExpressionFactory::build_axiom): Likewise.
+	* src/Evaluator.C (SimpleEvalVisitor): Tidy.
+	(EvaluationVisitor): Handle Formal.
+	* src/elaboration.C (elaborate_parameters): Change return type, Tidy.
+	(elaborate_function): Adjust.
+	(elaborate_definition): Tidy.
+	(elaborate_template): Likewise.
+	(elaborate_formula): Likewise.
+	* src/Expression.C (Formals::Formals): Define.
+	(Formals::operator InputTypes): Likewise.
+	(Axiom::Axiom): Adjust.
+	(Formula::Formula): Likewise.
+	(UserFunction::UserFunction): Likewise.
+	(UserFunction::parameter): Define.
+	(ExpressionFactory::build_axiom): Adjust.
+	(ExpressionFactory::build_formula): Likewise.
+	(ExpressionFactory::build_function): Likewise.
+	* src/Type.C (GenericType::GenericType): Adjust.
+	(TypeFactory::make_generic_type): Likewise.
+
+2012-08-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Evaluator.C (SimpleEvalVisitor): Tidy handling of Block.
+	(EvaluationVisitor): Likewise.
+	(sexpr): Fix thinko.
+
+2012-08-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::function_ast): Remove.
+	(FunctionAst): Likewise.
+	(to_function): Likewise.
+	* src/Ast.C (canonical_name): Likewise.
+	(to_function): Likewise.
+	* src/Expression.H (BlockElaboration): Remove.  Adjust users.
+	* src/elaboration.C (elaborate_parameters): New.
+	(do_elaborate_arrow_type): Use it.
+	(elaborate_block): Adjust return type.  Tidy.
+	(elaborate_function): Adjust parameter list.  Tidy.
+	(elaborate_definition): Now handle function definition.
+	* src/substitution.C (substitute): Adjust.
+	* src/intrinsics.C (define_addressof_builtin): Likewise.
+
+2012-08-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::concept_ast): Remove.
+	(ConceptAst): Likewise.
+	(to_concept): Likewise.
+	(AstFactory::make_concept): Likewise.
+	* src/elaboration.C (axiom_link_name): Remove.
+	(elaborate_axiom): Likewise.
+	(elaborate_clause): Likewise.
+	(elaborate_concept): Likewise.
+	(Elaborator::elaborate): Remove Ast::concept_ast case.
+	* src/Ast.C (to_concept): Likewise.
+	(AstFactory::make_concept): Likewise.
+	(to_call_form): New.
+	* src/Parser.C (ParseErrorAt::isse_on): Fix thinko.
+	(parse_parameter_list): Tidy.  Adjust callers.
+	(parse_proposition): Remove.
+	(parse_formula): Likewise.
+	(parse_concept_clause): Likewise.
+	(parse_concept_clause_list): Likewise.
+	* src/ast-io.C (ast_kind_name): Remove "%concept".
+	(sexpr): Handle CallFormAst.  Remove support for ConceptAst.
+
+2012-08-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (CallFormAst): New.
+	(AstFactory::make_call_form): Declare.
+	* src/Ast.H (CallFormAst): Implement constructor.
+	(AstFactory::make_call_form): Define.
+	* src/Parser.C (parse_error): Remove.
+	(parse_definiendum): New.
+	(parse_definition): Use it.
+	(parse_toplevel): Remove.
+	(parse_module): New.
+	(Parser::parse): Use it.  Adjust.
+	* src/Parser.H (Parser::parse): Take a second argument.
+	(Reader::read): Likewise.
+	(Reader::read_file): Likewise.
+	* src/Translator.H (Flags): Move to utility.H
+	(translation::Action): Likewise.
+	* src/Evaluator.C (Evaluator::toplevel_loop): Adjust.
+	(Evaluator::process_file): Likewise.
+	* src/Compiler.C (Compiler::process_file): Likewise.
+	* src/ast-io.C: Really now now.
+
+2012-08-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Output.H (io::tab_unit): Move from src/cxx-format.C
+	* src/cxx-format.C: Adjust users.
+
+2012-08-12  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::enumeration_ast): Remove.
+	(Ast::axiom_ast): Likewise.
+	(AtomicAst): Derive from structure::unary<>.
+	(EnumerationAst): Remove.
+	(AxiomAst): Likewise.
+	* src/Ast.C: Propagate changes.  Move Ast formatting to ast-io.C
+	* src/Parser.C (parse_axiom): Remove.  Adjust caller.
+	* src/cxx-format.C: Move Output to its own module.  Adjust users.
+	* src/elaboration.C (axiom_link_name): Comment out.
+	(elaborate_axiom): Likewise.
+	(Elaborator::elaborate): Remove Ast::axiom_ast case.
+	* src/Output.H: New. Factor out of src/cxx-format.C
+	* src/Output.C: Likewise.
+	* src/Makefile.am (liz_SOURCES): Include Output.C and ast-io.C.
+
+2012-08-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::declare_tok): New.
+	(token::define_tok): Likewise.
+	* src/Token.C (keyword_table): Include "declare" and "define".
+	* src/Parser.C (parse_definition): Implement new grammar.
+	(parse_declaration): New.
+	(parse_statement): Tidy.
+	(parse_toplevel): Likewise.
+
+2012-08-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_definition): Fix errorneous grammar and
+	implementation.
+
+2012-08-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Evaluator.H (Evaluator::toplevel_loop): Take flags as arguments.
+	* src/Evaluator.C (Evaluator::toplevel_loop): Set them.
+	* src/driver.C (main): Adjust.
+	* src/elaboration.C (elaborate_type): Fix thinko.
+	* src/Compiler.C (Compiler::process_file): Print debug info.
+
+2012-08-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (filter::Artifact): New.
+	(elaborate_type): Take a third parameter deciding what to filter.
+	(build_name): New overload.
+	(finish_definition): Factorize out of existing elaborate_definition.
+	(elaborate_definition): Add new overload.
+
+2012-08-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_arrow_type): New.
+	(elaborate_type): Use it to handle function types.
+
+2012-08-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (Elaborator::elaborate_type): Remove.
+	* src/elaboration.C (elaborate_type): Make non-member function.
+	Adjust callers.
+
+2012-08-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::data_member_ast): Remove.
+	(DataMemberAst): Likewise.
+	(AstFactory::make_data_member): Likewise.
+	* src/Ast.C (prefix_form): Remove support for DataMemberAst.
+	(to_data_member): Remove.
+	(AstFactory::make_data_member): Likewise.
+	* src/named-scope.C (elaborate_class_member): Remove.
+	(elaborate_class): Adjust.
+
+2012-08-11  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_definition): Use only_identifier.  Tidy.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::named_scope_ast): Remove.
+	(NamedScopeAst): Likewise.
+	(to_named_scope): Likewise.
+	(AstFactory::make_function): Likewise.
+	(AstFactory::make_named_scope): Likewise.
+	* src/Ast.C (NamedScopeAst::NamedScopeAst): Remove.
+	(prefix_form): Remove Ast::function_ast and Ast::named_scope_ast cases.
+	(to_named_scope): Remove.
+	(AstFactory::make_function): Likewise.
+	(AstFactory::make_named_scope): Likewise.
+	* src/Elaborator.H (elaborate_namespace): Adjust last parameter type.
+	* src/elaboration.C (elaborate_initializer): Tidy.
+	(Elaborator::elaborate): Remove Ast::named_scope_ast case.
+	* src/named-scope.C (elaborate_namespace): Tidy.
+	* src/Parser.C (match_braced_optional): Remove.
+	(required_parenthesized_optional): Likewise.
+	(parse_initialization): Likewise.
+	(parse_constraint): Likewise.
+	(parse_definition_tail): Likewise.
+	(parse_initializer): Likewise.
+	(parse_member_operator_name): Likewise.
+	(parse_operator_definition_tail): Likewise.
+	(parse_data_member_tail): Likewise.
+	(parse_constructor_name): Likewise.
+	(parse_assign): Likewise.
+	(parse_member_list): Likewise.
+	(parse_braced_member_list): Likewise.
+	(parse_member): Likewise.
+	(parse_structure): Likewise.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::variable_ast): Remove.
+	(Ast::labelled_ast): Likewise.
+	(Ast::typedef_ast): Likewise.
+	(AstFactory::make_labelled): Likewise.
+	* src/Ast.C (ast_kind_name): Lose "%variable". "%labelled", and
+	%typedef".
+	(AstFactory::make_labelled): Remove.
+	* src/Parser.C (parse_simple_statement_or_assignment): Rename from
+	parse_simple_statement_or_assignment_or_construction.  Simplify.
+	Adjust callers.
+	(maybe_parse_label): Remove.
+	(parse_statement): Simplify.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (elaborate_class): Adjust type of last parameter.
+	* src/elaboration.C (elaborate_initializer): Tidy.
+	* src/named-scope.C (get_block_or_else): New.
+	(elaborate_class): Adjust.  Use it.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.C (keyword_table): Move before token::operator<<.
+	(token::operator<<): Use it.
+	* src/Parser.C (parse_assumption): Make it optional.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (only_identifier): New.
+	(elaborate_signature): Likewise.
+	(Elaborator::elaborate): Handle signatures.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (SignatureAst): New.
+	(Ast::signature_ast): New constant.
+	(AstFactory::make_signature): Declare.
+	(to_signature): Likewise.
+	* src/Ast.C: Implement SignatureAst members.
+	(to_signature): Define.
+	(prefix_form): Handle SignatureAst.
+	(AstFactory::make_signature): Define.
+	* src/Parser.C (parse_definition_tail): Tidy.
+	(parse_definition): Likewise.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_basic_type): Fix thinko; accept "struct"
+	and "union" as basic types.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Transition to linear declaration syntax.
+	* src/Parser.C (parse_union_member): Remove.
+	(parse_union_member_sequence): Likewise.
+	(parse_union_body): Likewise.
+	(parse_union): Likewise.
+	(parse_template): Likewise.
+	(parse_toplevel_list): Likewise.
+	(parse_namespace): Likewise;
+	(parse_definition): Simplify.
+	(parse_toplevel): Likewise.
+	* src/Ast.H (AstFactory::make_template): Remove.
+	* src/Ast.C (AstFactory::make_template): Likewwise.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (VariableAst): Remove.
+	(AstFactory::make_variable): Likewise.
+	(to_variable): Likewise.
+	* src/Ast.C: Remove implementation of Ast members.
+	(prefix_form): Adjust.
+	(to_variable): Remove.
+	(AstFactory::make_variable): Likewise.
+	* src/Parser.C (parse_definition_tail): Adjust return type.  Tidy.
+	(parse_definition): Likewise.
+	(parse_template): Tidy.
+	* src/elaboration.C (Elaborator::elaborate): Adjust.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (Elaborator::sorry): Declare.
+	* src/Elaborator.C (Elaborator::sorry): Define.
+	* src/elaboration.C (elaborate_definition): New overload.
+	(Elaborator::elaborate): Use it to handle DefinitionAst.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (DefinitionAst): New class.
+	(Ast::definition_ast): New constant.
+	(to_definition): Declare.
+	(AstFactory::make_definition): Likewise.
+	* src/Ast.C: Implement new additions.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Formal): Parameter type is now a TypeElaboration.
+	* src/Expression.C: Propagate changes.
+	* src/substitution.C (subst_formal): Tidy.
+	* src/elaboration.C (build_binary_predicate_type): Simplify.
+	(Elaborator::Elaborator): Tidy.
+	(elaborate_parameter): Simplify.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (Elaborator::get_typename): Change return type to
+	TypeElaboration.  Move implementation to src/Elaborator.C.
+	(Elaborator::get_namespace): Likewise.
+	(Elaborator::get_struct): Likewise.
+	* src/elaboration.C (type_equality_operator): Simplify.
+	* src/named-scope.C (elaborate_class_member): Likewise.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (Elaborator::get_void): Change return type to
+	TypeElaboration.  Move implementation to src/Elaborator.C.
+	(Elaborator::get_bool): Likewise.
+	(Elaborator::get_byte): Likewise.
+	(Elaborator::get_char): Likewise.
+	(Elaborator::get_int): Likewise.
+	(Elaborator::get_double): Likewise.
+	(Elaborator::get_string): Likewise.
+	* src/Elaborator.C: New.
+	* src/Makefile.am (liz_SOURCES): Include it.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Elaborator.H (Elaborator::define_basic_type): Rename from
+	Elaborator::define_type.
+	* src/elaboration.C (Elaborator::Elaborator): Propagate change.
+
+2012-08-10  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H: Miscellaneous cleanup
+	* src/Ast.C: Likewise.
+	* src/elaboration.C: Propagate changes.
+
+2012-08-09  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (LambdaAst): New.
+	(Ast::lambda_ast): New constant.
+	(AstFactory::make_lambda): Declare.
+	(to_lambda): Likewise.
+	* src/Ast.C (LambdaAst::LambdaAst): Define.
+	(ast_kind_name): Include %lambda.
+	(prefix_form): Handle LambdaAst.
+	(to_lambda): Define.
+	(AstFactory::make_lambda): Likewise.
+	* src/Parser.C (parse_arrow_type): New.
+	(parse_quantified_type): Likewise.
+	(parse_type): Explicitly allow quantified and arrow type syntax.
+
+2012-08-09  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_parameter): Reflect syntax change.
+
+2012-08-09  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (CaseAst): Tidy.
+	(AstFactory::make_case): Likewise.
+	* src/Ast.C: Propagate changes.
+	* src/Parser.C (parse_case): Tidy.
+
+2012-08-09  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (match_meta_bracketed): Remove.
+	(parse_primary): Simplify.  Use parse_enclosure.
+	* src/Ast.H (MetaAst): Remove.
+	(Ast::meta_bracket_ast): Likewise.
+	(to_meta): Likewise.
+	(AstFactory::make_meta): Likewise.
+	* src/Ast.C: Propagate changes.
+
+2012-08-09  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H: Remove support for angle-bracketed specialization name.
+	* src/Ast.C: Propagate change.
+	* src/Parser.C: Likewise.
+
+2012-08-09  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H(ApplyAst): Rename from CallAst.  Arguments are
+	now an EnclosureAst.
+	(Ast::array_ref_ast): Remove.
+	(Ast::apply_ast): Rename from Ast::call_ast.  Propagate change.
+	(AstFactory::make_array_ref): Remove.
+	(AstFactory::make_apply): Rename from AstFactory::make_call.
+	* src/Ast.C: Propagate changes from src/Ast.H.
+	(ast_kind_name): Remove %array_ref.
+	* src/Parser.C (match_bracketed): Remove.
+	(parse_enclosure): New.
+	(parse_postfix): Use it.  Simplify.
+	* src/elaboration.C (get_arguments): New.
+	(elaborate_call): Use it.  Tidy.
+	(Elaborator::elaborate): Handle apply_ast.
+
+2012-08-09  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H: Store syntax sequencces by value instead of pointers.
+	* src/Ast.C: Propagate changes.
+	* src/elaboration.C: Likewise.
+	* src/Evaluator.H: Likewise.
+	* src/Evaluator.C: Likewise.
+	* src/Parser.H: Likewise.
+	* src/Parser.C: Likewise.
+
+2012-08-08  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (Ast::enclose_ast): New kind.
+	(EnclosureAst): New.
+	(to_enclosure): Declare.
+	(AstFactory::make_enclosure): Likewise.
+	* src/Ast.C (EnclosureAst::EnclosureAst): Define.
+	(to_enclosure): Likewise.
+	(prefix_form): Handle EnclosureAst.
+
+2012-08-07  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::Kind): Incudle throw_tok
+	* src/Token.C (keyword_table): Include "throw".
+	* src/Parser.C (parse_exit): New.
+	(parse_return): Remove.
+	(parse_expression):  Allow exit expressions as flow alternative.
+	(parse_control_statement): Handle both return and throw.
+
+2012-08-07  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_type): New, for dedicated type expressions.
+	(parse_parameter): Use it.
+	(parse_alias): Likewise.
+	(parse_member): Likewise.
+	(parse_case): Use parse_parameter.
+	(require_semicolon): New.
+	(parse_goto): Use it.
+	(parse_union_member): New.
+	(parse_union_member_sequence): Likewise.
+	(parse_union_body): Likewise.
+	(parse_union): Likewise.
+	(parse_definition): Call it to parse union definition.
+
+2012-08-07  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (token::Kind): Add union_tok.
+	* src/Token.C (keyword_table): Include "union".
+	* src/Parser.C (parse_identifier_or_else): New.
+	(parse_union_member): Likewise.
+	(parse_union): Likewise.
+	(parse_toplevel): Call it to parse union definitions.
+
+2012-08-06  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_conjunction): Update comment.
+	(parse_disjunction): New.
+	(parse_disjunction): The expression in the condition is now a
+	disjunction.
+	(parse_case): Likewise.
+	(parse_proposition): Likewise.
+
+2012-08-06  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/utility.H (tools::SystemName): New.
+	(build::system_name): Likewise.
+	(host::system_name): Likewise.
+	(target::system_name): Likewise.
+	* src/tools.C.in: Define them.
+	* src/Compiler.C (compile_cxx_file): Adjust.
+	* configure.ac: Call LIZ_CANONICAL_TRIPLETS, LIZ_TARGET_TOOLS, and
+	LIZ_BUILD_TOOLS.
+	* misc/liz.m4: Define them.
+
+2012-07-24  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Field): New.
+	(ExpressionFactory::make_field): Likewise.
+	(Expression::Visitor::visit(const Field&)): Likewise.
+	* src/Expression.C (Field::Field): Define.
+	(prefix_form): Dump Field.
+
+2012-06-22  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_formal): New.
+	(parse_name): Call it.
+	(parse_definition_tail): Parse initialization precondition.
+	* src/Ast.H (VariableAst): Store initializer precondition.
+	(FormalAst): New.
+
+2012-06-21  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	Discountinue C++-style array variable declaration syntax.
+	* src/Parser.C (parse_array_variable): Remove.
+	(parse_definition_tail): Do not call it.
+	(parse_data_member_tail): Dot not allow C++-style array declarator.
+
+2012-06-20  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Lambda): New.
+	* src/Expression.C: Define associated functions.
+
+2012-06-20  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_class_scope): Move to
+	named-scope.C.  Rename to elaborate_class.
+	(elaborate_namespace_scope): Move to named-scope.C.  Rename to
+	elaborate_namespace.
+	(ScopeManager): Move to Elaborator.H.
+	* src/named-scope.C: New.
+	* src/Makefile.am (liz_SOURCES): Include.
+
+2012-06-20  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (elaborate_structure_object): New.
+	(elaborate_brace_list): Use it to handle structure objects.
+	* src/Expression.C (ExpressionFactory::build_construction): Define.
+	(PrefixFormVisitor): Handle Construction.
+	* src/Type.C (TypePatternVisitor): Handle StructureType.
+	* src/cxx-format.C (PostfixFormatter): Handle Construction.
+
+2012-06-20  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (quote): New.
+	(elaborate_class_member): Fix thinko.
+	(lookup_field): New.
+	(finish_component): Likewise.
+	(finish_offset): Likewise.
+	(select_field): Likewise.
+	(elaborate_dot): Likewise.
+	(Elaborator::elaborate): Handle member selection expressions.
+	* src/cxx-format.C (CxxTypeSpecifierFormatter): Handle structure types.
+
+2012-06-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (resolve_identifier_value): New.
+	(elaborate_identifier): Use it to find a declared identifier value.
+
+2012-06-18  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (Component): New.
+	* src/Expression.C (Component): Define constructor.
+	* src/cxx-format.C (format_selected_member): New.
+	(PostfixFormatter): Use it to format member selection.
+
+2012-06-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/elaboration.C (Elaborator::elaborate): Handle SourceFileAst.
+	Use elaborate_definition for NamedScopeAst with appropriate type.
+	(elaborate_source_file): New.
+	(elaborate_namespace_scope): Rename from elaborate_namespace. Simplify.
+	(elaborate_class_scope): Rename from elaborate_class.  Simplify.
+	(elaborate_initializer): New.  Use them.
+	(elaborate_definition): Use it.  Tidy.
+	* src/Expression.H (Module): Derive from ToplevelScope.  Tid.
+	* src/intrinsics.C (intrinsic_import): Do not duplicate work.
+	* src/Ast.H (SourceFileAst::path): Rename from SourceFileAst::name.
+	(to_source_file): Declare.
+	* src/Ast.C (to_source_file): Define.
+	(prefix_form): Print content of SourceFileAst.
+
+2012-06-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.H (ParseErrorAt): Now store line.
+	* src/Parser.C (ParseErrorAt::issue_on): Print it as context.
+	(parse_error(Parser*, const std::string&)): New.
+	(require): Use it.
+	(must): Likewise.
+	(fuse_token): Fix thinko.  Add line field.
+	* src/Token.H (Line): No longer derive from std::string.
+	Remove default constructor.
+	Add new accessors line() and number().
+	Adjust users.
+	* src/Token.C (Line::make_token): Store this in Token::line.
+
+2012-06-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/cxx-format.C (DeclarationFormatter): No longer derive from
+	StatementFormatter.
+	* src/Expression.H (format_toplevel): Rename from format_as_cxx.
+	Adjust users.
+
+2012-06-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (SourceFileAst): Rename from SourceProgramAst.
+	Adjust users.
+	* src/Parser.H (Parser::read_file): Now returns a SourceFileAst.
+	* src/Elaborator.H (Elaborator::new_module): Remove declaration.
+	* src/elaboration.C (Elaborator::new_module): Remove.
+	* src/Compiler.C (Compiler::process_file): Adjust.
+
+2012-06-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/cxx-format.C (CxxTypeSpecifierFormatter): Handle ReadonlyType.
+	(format_cxx_absdecl_type_prefix): Likewise.
+	(format_cxx_type): New.
+	(format_cxx_absdecl_type_suffix): Use it.
+	(format_cxx_fundecl): Format name with NameFormatter.  Use
+	format_cxx_type for declaration type.
+	(DeclarationFormatter): Handle UserFunction.
+	(CxxFormatVisitor): Likewise.
+
+2012-06-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.H (Parser::current_token): New.
+	* src/Parser.C (Parser::current_token): Define.
+
+2012-06-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Ast.H (LineAst): New.
+	(SourceProgramAst): Likewise.
+	* src/Ast.C: Define associated member functions and support routines.
+	* src/Translator.H (Path): Move to utility.H
+
+2012-06-17  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.H (parse_error): Remove declarations.
+	* src/Parser.C (parse_error): Make internal.
+	(parse_constructor_name): New.
+	(parse_constructor): Use it.  Tidy.
+	(parse_member): Simplify.
+
+2012-06-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/cxx-format.C: Format structures.
+	* src/Expression.H (StructureType): Change representation to store
+	data members as a sequence of field selectors.
+	* src/elaboration.C (elaborate_class_member): Tidy.
+	* src/Evaluator.C: The evaluator wants to evaluate structures.
+
+2012-06-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/cxx-format.C: Format field selection and array part section.
+	* src/substitution.C: Implement subsitutions into Offset and
+	FieldSelector.
+	* src/Expression.H (FieldSelector): New.
+	(Offset): Likewise.
+	(Expression::Visitor): Declare corresponding visitor handlers.
+	(ExpressionFactory::build_field): Declare.
+	(ExpressionFactory::build_offset): Likewise.
+	* src/Expression.C (FieldSelector): Implement constructor.
+	(Offset): Likewise.
+	(Expression::Visitor::visit(const FieldSelector&)): Define.
+	(Expression::Visitor::visit(const Offset&)): Likewise.
+	(ExpressionFactory::build_field(const LinkName*, Elaboration)):
+	Likewise.
+	(ExpressionFactory::build_offset(Elaboration, Elaboration)): Likewise.
+
+	Implement dumping for FieldSelector and Offset in s-expression format.
+
+2012-06-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (prefix_operator_tokens): No longer include "!".
+	* src/cxx-format.C: Handle specialized unary classes.
+	* src/Token.H: Exclamation is no longer an operator.
+	* src/intrinsics.C: Adjust.
+	* src/Token.C (operator<<(std::ostream&, const Token&)): Do not
+	reference Token::exclamation_tok.
+	* src/substitution.C: Handle new specialized unary expressions.
+	* src/overload.C (build_unary): Remove.  Adjust caller.
+	* src/Expression.H (unary_impl): New.
+	* src/Evaluator.C: Handle new specialized unary expressions.
+	* src/Expression.C: Implement new specialized unary expressions.
+	Implement corresponding constructor functions.
+	* src/elaboration.C (elaborate_prefix): Take expression construcor
+	function as addiional third argument.
+	(Elaborator::elaborate): Designate expression constructor
+	function as additional argument.
+
+2012-06-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/cxx-format.C (StatementFormatter): New.
+	(CxxFormatVisitor): Use it to format satements.
+	* src/Expression.H (BinaryExpression): Derive directly from Expression.
+
+2012-06-16  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/cxx-format.C: Add more C++ formatters.
+	* src/overload.C (build_binary): Remvoe.  Adjust callers.
+	(match_and_coerce_arguments): Define.
+	* src/Expression.H: Declare specialized binary expression classes.
+	(Expression::Visitor): Declare associated visit handlers.
+	(ExpressionFactory): Declare associated constructor functions.
+	* src/Evaluator.C (SimpleEvalVisitor): Replace BinaryExpression
+	handler by new specialized visit functions overriders.
+	* src/substitution.C (InstantiatorVisitor): Likewise.
+	* src/Elaborator.H (match_and_coerce_arguments): New.  Declare.
+	* src/elaboration.C (elaborate_infix): Take expression builder as
+	third parameter.  Construct the final expression here.
+	(Elaborate::elaborate): Explicitly pass binary expression
+	constructors to the dedicated elaboration function.
+	* src/Expression.C: Define constructors for new binary expression
+	classes.
+	Define associated visitors as forwaring to BinaryExpression handler.
+	Define dedicated constructor functions in ExpressionFactory.
+	* src/utility.H (structure::ternary): New.
+
+2012-06-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Expression.H (format_as_cxx): Declare.
+	(ExpressionSequence::element): New accessor.
+	(simple_value<>::rep): Likewise.
+	(get_std_string(const String&)): New.
+	(UserFunction::parameter): Likewise.
+	* src/Compiler.C (Compiler::process_file): Format elaboration
+	result as C++ expressions to the output file.
+	* src/Data.H (get_std_string(Symbol)): New.
+	* src/pretty-print.C (ExpressionPrettyPrintVisitor): Tidy.
+	* src/cxx-format.C: New.
+	* src/Makefile.am (liz_SOURCES): Include it.
+
+2012-06-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/utility.H (tools::cxx_compiler): Declare.
+	(tools::cxx_flags): Likewise.
+	(tools::cxx_ldflags): Likewise.
+	(tools::cxx_libs): Likewise.
+	* src/Compiler.C (compile_cxx_file): New.
+	(Compiler::process_file): Call the C++ compiler on the generated file.
+	* src/tools.C.in: New.
+
+2012-06-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Compiler.H: New.
+	* src/Compiler.C: Likewise.
+	* src/Translator.H: Likewise.
+	* src/Evaluator.C (Evaluator::process_file): Take an additional
+	parameter.  Enable flags on the reader.
+	* src/Elaborator.H: Include it.
+	(Elaborator): Now inherit from Translator.
+	Move member function process_file, elaborate, and eval to Translator.
+	* src/driver.C (process_command_line): New.
+	(main): Use it.  Simplify.  Now invoke a compiler if so specified.
+
+2012-06-15  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Parser.C (parse_data_member_tail): Accept optional
+	initialized and definition assertion.
+	(parse_member_list): New.
+	(parse_braced_member_list): Likewise.
+	(parse_conditional_members): Likewise.
+	(parse_structure): Accept conditional members.
+	* src/Ast.C (prefix_form(std::ostream&, const DataMemberAst*)): Define.
+	* src/Ast.H (DeclAst): Add initializer field.
+	(VariableAst): Adjust.
+	(ParameterAst): Likewise.
+	(FunctionAst): Likewise.
+	(NamedScopeAst): Likewise.
+	(AxiomAst): Likewise.
+	(DataMemberAst): Likewise.  Add definition assertion.
+	* src/Expression.H (Assert): New expression class.
+	(ExpressionFactory::build_assert): Declare.
+	* src/Expression.C (Assert::Assert): Define.
+	(Expression::Visitor::visit(const Assert&)): Likewise.
+	(ExpressionFactory::build_assert(Elaboration)): Likewise.
+	(PrefixFormVisitor::visit(const Assert&)): Likewise.
+
+2012-06-14  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H: "typedef" is no longer a keyword.  It was redundant
+	with "using" for aliases.
+	* src/Token.C: Reflect change.
+	* src/Parser.C (parse_alias): Rename from parse_typedef.  Adjustt
+	callers.  Handle new syntax for type alias declaration.
+	* src/elaboration.C (elaborate_alias): New.
+	(Elaborator::elaborate): Use it.  Handle type aliases.
+
+2012-06-13  Gabriel Dos Reis  <gdr@axiomatics.org>
+
+	* src/Token.H (offset_type): New.
+	(Token::column): Adjust type to offset_type.
+	* src/Token.C (Line::make_token): Fix conversion.
+	* src/Environment.H (Environment<T>::bind): Fix dependent name use.
+	* src/Evaluator.C (EvaluationVisitor::visit(const CallExpression&)):
+	Fix duplicate local variable declaration.
+
+2011-07-06  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/storage.H: Add.
+	* src/storage.C: Likewise.
+	* src/Ast.H: Use them.
+
+2010-10-30  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/Ast.H (Sequence<>): New.
+	(QuantifiedAst): Store Sequence<ParameterAst> instead of AstSequence.
+	(FunctionAst): Likewise.
+	(ConstructionAst): Likewise.
+	(TemplateAst): Likewise.
+	(ConceptAst): Likewise.
+	(AxiomAst): Likewise.
+	(to_parameter): Remove.
+	(to_member_initializer): Likewise.
+	* src/Ast.C: Fix callers.
+	* src/Parser.C: Likewise.
+
+2010-10-29  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/elaboration.C (elaborate_axiom): Return a binding
+	for the new definition.
+
+2010-10-28  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/elaboration.C (assume_property): New.
+	(elaborate_guard): Use it.
+	(load_requirements): Likewise.  Simplify.
+
+	* src/driver.C (is_prefix): Fix off-by-one thinko.
+	(debug_options): Likewise.
+
+	* src/Expression.H (Value::Kind): New.  Categorize abstract values.
+	* src/elaboration.C (elaborate_parameter): Take an additional
+	argument expressing the kind of value the parameter should be given.
+	(elaborate_function): Don't give values to parameters.
+	(elaborate_assignment): Don't take rvalue of right hand side.
+	* src/elaboration.C (lvalue): New.
+	(elaborate_assignment): Use it to elaborate assignment to general
+	lvalue expressions.
+	* src/Parser.C (parse_brace_operator): Parser brace operators at
+	toplevel.
+	(parse_operator): Use it.
+	(parse_member_operator_name): New.
+	(parse_operator_definition_tail): Use it.  Simplify.  Do parse
+	assignment as indicated in the grammar.
+	* src/Ast.H (ParameterAst::name): Fix thinko from last mod.
+
+2010-10-12  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/utility.H (semantics_error): Move to Elaborator.H.
+	* src/utility.C (semantics_error): Remove definition.
+	* src/substitution.C: Rewrite.
+	* src/pattern.C: Rewrite.
+	* src/overload.C: Rewrite.
+	* src/intrinsics.C: Adjust to changes in Elaborator.H and
+	Expression.H. 
+	* src/elaboration.C: Rewrite.
+	* src/driver.C: Add debug output option processing.
+	* src/Type.C: Reimplement.
+	* src/Parser.H (BasicDriver): New.
+	(Parser): Derive from it.
+	(Parser::set_debug): Remove.
+	(Parser::has_debug): Likewise.
+	* src/Parser.C: Define BasicDriver members.
+	(Parser::Parser): Don't initialize debug_flag here.
+	(Parser::parse): Query debug enabled.
+	* src/Expression.H (Pair): Move to utility.H
+	(make_pair): Likewise.
+	(ExpressionSequence): Now a sequence of Elaboration.
+	(TemplateId): Arguments are now sequence of Elaboration.
+	(Assumption::type): Remove.
+	(make_elaboration): Add overload for `const Formal*'.
+	(Concept): Fix thinko. Formalae are now Elaborations.
+	(TypeElaboration): New.
+	(BasicType::data_info): Now private.
+	(LensType::base): Rename to origin.
+	(PointerType::pointee): Adjust type.
+	(ReferenceType::referee): Likewise.
+	(ArrayType::element_type): Likewise.
+	(FunctionType): Adjust.
+	(ReadonlyType): Likewise.
+	(TypeExpression): Likewise.
+	(GenericType): Likewise.
+	(ExpressionFactory): Likewise.
+	(Axiom): Rewrite.
+	(Formula): Likewise.
+	(Constraint::type): Remove.
+	(statement_base): Likewise.
+	(Block): Rewrite.
+	(BlockElaboration): New,
+	(UserFunction): Adjust.
+	(Template): Likewise.
+	(CoerceExpression): Remove.
+	(ReadExpression): Rewrite.
+	(WriteExpression): Likewise.
+	(UnaryExpression): Likewise.
+	(BinaryExpression): Likewise.
+	(Return): Likewise
+	(Break): Likewise.
+	(DoExpression): Likewise.
+	(WhileExpression): Likewise.
+	(IfExpression): Likewise.
+	(BindExpression): Likewise.
+	* src/Expression.C: Remove definitions of functions removes
+	from Expression.H.  Reimplement functions.
+	(prefix_form): Rewrite to avoid infinite loop.
+	* src/Evaluator.H: Tidy.
+	* src/Evaluator.C (reify): Rewrite.
+	(is_simple): Likewise.
+	(is_closed): Likewise.
+	(evaluate): Likewise.
+	(evaluate_type): New.
+	(simplify): Remove.
+	(Evaluator::eval): Rewrite.
+	* src/Environment.H: Tidy.
+	* src/Environment.C: Define AssunptionSet members.
+	* src/Elaborator.H (SemanticsError): Move here.
+	(SpecializationRepository): New.
+	(Elaborator::eval): Now an Elaboration and return an Object.
+	(Elaborator::elaborate_type): Now return a TypeElaboration.
+	(Elaborator::push_return_type): Now take a TypeElaboration.
+	(Elaborator::pop_return_type): Now return a TypeElaboration.
+	(Elaborator::push_decl_context): New.
+	(Elaborator::pop_decl_context): Likewise.
+	(Elaborator::retrieve_specialization): Likewise.
+	(Elaborator::register_specialization): Likewise.
+	(Elaborator::semantics_error): Move here from utility.H.
+	(Elaborator::get_reader): Move to here from Evaluator.H.
+	(coerce_to_type): Now take an Elaboration and return a
+	TypeElaboration. 
+	* src/Ast.H: Tidy.
+	* src/Ast.C: Likewise.
+
+2010-10-03  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/substitution.C: Simplify.
+	(unify): Remove.
+	* src/pattern.C: Simplify.
+	* src/overload.C (augment_property_set): Remove.
+	(load_abstract_signatures): Likewise.
+	(create_archetype): Likewise.
+	(dress_up): Likewise.
+	* src/elaboration.C: Simplify substantially.
+	(Evidence): Define member functions.
+	(CollectFormalsVisitor): Remove.
+	(has_type_values): New.
+	(has_type_denotation): Likewise.
+	(is_callable): Rename from is_callable_type.
+	(entail): New.
+	(is_valid): New.
+	(has_eq_denotation): Likewise.
+	(find_eq_class): Likewise.
+	(project_arguments): Likewise.
+	(eq_close_term_if_can): Likewise.
+	(equality_expr): Likewise.
+	(discharge_constraint): Likewise.
+	(Elaborator::coerce): Use them.
+	(load_requirements): New,
+	(elaborate_basic_constraint): Likewise.
+	(coerce_to_type): Use them.
+	(load_requirements_on_parameter): New.
+	(elaborate_parameter): Use it.
+	(get_non_parameter_binding): Remove.
+	(bind_generic_instance): New.
+	(select_decl): Likewise.
+	(elaborate_template): Use them.
+	* src/Type.C: Simplify.
+	
+	* src/Token.H (Token::arrow_tok): New.
+	(Token::byte_tok): Likewise.
+	* src/Token.C (digraph_info): Update for arrow.
+	* src/Parser.C (parse_postfix): Accept arrows.
+
+	* src/Expression.H: Simplify.
+	(Concept): Rename from ConceptType.
+	(LinkName): New.
+	(Signature): Rename from AbstractFunction.
+	(is_type_concept): Remove.
+	(Elaboration): Substantially simplify.
+	* src/Expression.C: Simplify.
+
+	* src/Evaluator.C (reify): Tidy.
+	(IsSimpleVisitor): Likewise.
+	(IsClosedVisitor): Likewise.
+	(SimplifyVisitor): Likewise.
+	(EvaluationVisitor): Likewise.
+
+	* src/Environment.H (Stack<>::select_if_can): New.
+	(AssumptionSet): New.
+	(EquivalenceClasses): Likewise.
+	(declare): Declare.
+	* src/Environment.C (declare): Define.
+	(ScopeStack): Define member functions.
+
+	* src/Elaborator.H (Evidence): New,
+	(Elaborator::eval): Remove.
+	(Elaborator::coerce): Remove convenience overload.
+	(Elaborator::declara): Remove.
+	(Elaborator::get_typename): Now return a `const BasicType*'.
+	(Elaborator::get_Function): Now return a `const Concept'.
+	(Elaborator::get_byte): New.
+	(Elaborator::register_evidence): Likewise.
+	(Elaborator::find_evidence): Likewise.
+	(Elaborator::define_type): Lose last parameter.
+	(Elaborator::define_concept): Likewise.
+	(dress_up): Remove.
+	(RuleSet): Likewise.
+	(rewrite): Likewise.
+
+	* src/Ast.H (DeclAst): Tidy.
+	(VariableAst): Likewise.
+	(ParameterAst): Likewise.
+
+2010-09-27  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/rewrite.C: Remove.
+
+2010-09-22  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/Expression.H: Concept is no longer a type.  Instead use
+	ViewType for unary concepts as type.
+	(is_type_concept): Remove.
+	* src/Expression.C: Propagate changes.
+	* src/Elaborator.H: Make `typename' a basic type, not a concept.
+	* src/intrinsics.C (convert_syntax_to_type): Coerce the
+	elaboration to a type.
+
+2010-09-19  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/Expression.H (Expression::Visitor::visit): Don't forget overload
+	for GenericType.
+	* src/Expression.C (Expression::Visitor::visit): Define it.
+	* src/elaboration.C (fixup_template_declaration): Remove.
+	(elaborate_template): Don't call it.  Tidy.
+
+2010-09-14  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/elaboration.C (lvalue_to_rvalue): Fold into rvalue.  Remove.
+
+2010-09-13  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/elaboration.C (lvalue_to_rvalue): New.
+	(Elaborator::coerce): Use it.
+	(rvalue): Likewise.
+	(elaborate_function): The result of a function definition is an lvalue.
+
+	* src/elaboration.C (elaborate_definition): The result is an lvalue.
+	* src/Type.C (format_reference): Simplify.
+
+	* src/Expression.H (show_type): New.
+	* src/elaboration.C (rvalue): Likewise.
+	(elaborate_assignment): Use it to perform lvalue-to-rvalue
+	conversion on the right hand side expression.
+	(elaborate_initialization): Remove for now.
+	(elaborate_definition): Tidy.
+	* src/Evaluator.C (EvaluationVisitor::visit) [WriteExpression]: 
+	Fix thinko.
+
+	* src/utility.H (MachineType): New.
+	(get_info): Declare.
+	* src/utility.C: Include <stdint.h> and <inttypes.h>
+	(get_info): Define.
+
+2010-07-18  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	Parse fully qualified names (like in C++).
+	* src/Parser.C (parse_fullname): New.
+	(parse_primary): Use it to parse fully qualified names.
+
+2010-07-17  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/elaboration.C (elaborate_assumption): New.
+	(Elaborate::elaborate): Elaborate explicit toplevel assumptions.
+	* src/Parser.C (parse_assumption): Fix typo.
+	* src/Token.C: Likewise.
+	* src/Expression.H (Assumption): New class.
+	(Expression::Visitor::visit): Add overload for Assumption.
+	(ExpressionFactory::build_assumption): New.
+	(ExpressionFactory::expression_lt::operator()): Add overload
+	for Assumption.
+	* src/Expression.C (Assumption::Assumption): Define.
+	(Assumption::visit): Likewise.
+	(ExpressionFactory::build_assumption): Likewise.
+	(PrefixFormVisitor::visit): Override for Assumption.
+
+2010-07-14  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	Fix parse error on array variable definitions.
+	* src/Parser.H (ParseErrorAt): Attempt to display column information.
+	* src/Parser.C: Propagate changes in Parser.H.
+	(parse_array_variable): New.
+	(parse_definition_tail): Use it to parse array definitions.
+	(Reader::read): Adjust type of line.
+	* src/Token.H (Line): No longer a type.  Define as a class.
+	(TokenStream::tokenize_operator): Change first argument to Line.
+	(TokenStream::tokenize_numbers): Likewise.
+	(TokenStream::tokenize_symbol): Likewise.
+	* src/Token.C (TokenStream::tokenize): Propagate changes.
+	(TokenStream::tokenize_operator): Likewise.
+	(TokenStream::tokenize_numbers): Likewise.
+	(TokenStream::tokenize_symbol): Likewise.
+	(Line::make_token): Define.
+	(make_token): Remove.
+	* src/intrinsics.C: Adjust type of line.
+	* src/Evaluator.C (Evaluator::toplevel_loop): Likewise.
+
+2010-05-16  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/Token.H (Token::namespace_tok): New token type.
+	* src/Token.C (keyword_table): Add "namespace".
+
+2010-04-15  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/Elaborator.H (Elaborator::get_input_type): New.
+	(Elaborator::get_concept): Likewise.
+	(Elaborator::input_type_fun): Likewise.
+	(Elaborator::codomain_fun): Likewise.
+	* src/elaboration.C (Elaborator::Elaborator): Initialize
+	input_type_fun, codomain_fun. 
+	(get_input_type): Tidy.
+	(get_codomain): Likewise.
+
+2010-04-14  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/Token.H (Token::open_mbracket_tok): New.
+	(Token::close_mbraket_tok): Likewise.
+	* src/Token.C (Delimiter): Remove.
+	(delimiter_table): Likewise.
+	(is_delimiter): Tidy.
+	(drigraph_info): Likewise.
+	(get_digraph_info): Likewise.
+	(TokenStream::tokenize_symbol): Likewise.
+	(TokenStream::tokenize): Likewise.
+	* src/Parser.C (closer): Handle Token::open_mbracket_tok.
+	(match_meta_bracketed): New.
+	(parse_primary): Meta-bracketed expressions are primary too.
+	* src/Ast.H (Ast::meta_bracket_ast): New enumerator.
+	(MetaAst): New.
+	(to_meta): Declare.
+	(AstFactory::make_meta): Likewise.
+	* src/Ast.C (ast_kind_name): Add %meta_bracket.
+	(prefix_form): Handle Ast::meta_bracket_ast.
+	(to_meta): New.
+	(AstFactory::make_meta): Define.
+
+2010-03-08  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	Add support for quantified declarations.
+	* src/elaboration.C (elaborate_formula): Handle quantified block
+	of concept clauses too.
+	* src/Token.C (keyword_table): Don't forget "exists".
+	* src/Parser.C (parse_formula): Now accept quantified block of
+	concept clauses.
+	(parse_concept_clause): Now accept existentially quantified clause.
+	* src/Ast.H (length): Overload for 'const ListAst*'.
+
+2010-02-24  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/elaboration.C (build_binary_predicate_type): New.
+	(select_equality_operator): Likewise.
+	(RewriteVisitor::visit): Use it.  Remove boilerplate.
+	(Elaborator::Elaborator): Initialize type_eq_fun.
+	Declare equality operator for Regular concept.
+	(load_abstract_signatures): New.
+	(create_archetype): Use it.
+	(are_equivalent): Remove boilerplate.
+	(query_arity): Likewise.
+	* src/Parser.C (parse_operator): Include "!=", "<=", ">", ">=".
+	(parse_definition): Accept operator names too.
+	* src/Elaborator.H (Elaborator::get_ttpe_eq): Declare.
+	(Elaborator::type_eq_fun): New data member.  
+
+2010-02-19  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/elaboration.C (implies): Fix typo.
+
+2010-02-17  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* src/Elaborator.H (deduce_template_arguments): Second argument is
+	now a sequence of elaborations.
+	* src/elaboration.C (is_viable_candidate): Adjust use.
+	* src/intrinsics.C (define_deref_builtin): New.
+	(Elaborator::define_unary_intrinsics): Use it.
+	* src/pattern.C (deduce_template_arguments): Tidy.  Strip toplevel
+	reference only if pattern type is not a reference type.
+
+2010-02-15  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* intrinsics.C (define_addressof_builtin): New.
+	(Elaborator::define_unary_intrinsics): Use it.
+	* elaboration.C (argument_types): Take a second argument
+	determining when to strip toplevel references.
+	(is_viable_candidate): Adjust call to argument_types.
+	* Expression.H (operator==): Remove overload for const Formal&.
+	(ExpressionFactory::expression_lt::operator()): Likewise.
+	(ExpressionFactory::formals): Now a list, instead of a set.
+	* Expression.C (ExpressionFactor::build_formal): Formal parameters
+	are generative.  Adjust.
+	* Type.C (format_pointer): New.
+	(PointerType::formatter): Use it.
+	* pattern.C (pattern_match): Tidy.
+

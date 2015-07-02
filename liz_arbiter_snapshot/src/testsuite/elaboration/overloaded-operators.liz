@@ -1,0 +1,24 @@
+-- Test to support overloaded operators
+-- For Ticket #78.
+
+-- Create a new type
+define Z: type = int
+
+-- Overloaded operators
+define (a:Z) + (b:Z): Z = per (rep a + rep b)
+define (a:Z) - (b:Z): Z = per (rep a - rep b)
+define (a:Z) * (b:Z): Z = per (rep a * rep b)
+define (a:Z) == (b:Z): bool = rep a == rep b
+define print(a:Z): void = print(rep a)
+
+-- Using the overloads
+define test_operator_overloads (): Z =
+  define x: Z = per 2
+  define y: Z = per 5
+  if x == y then
+    return (x * y) - (x + y)
+  else
+    return x
+
+
+print(test_operator_overloads())

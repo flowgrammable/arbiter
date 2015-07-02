@@ -1,0 +1,4 @@
+define Celsius:type = double
+
+define print(c:Celsius):void =
+  print rep c

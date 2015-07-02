@@ -1,0 +1,14 @@
+-- Test for ticket #53.
+
+
+define f(n:int):int = n
+
+
+-- Had trouble with single line compound statements
+define g(n:int):int =
+  return n
+
+
+define h(n:int):int =
+  define m:int = n
+  return m
