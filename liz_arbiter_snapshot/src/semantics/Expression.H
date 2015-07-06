@@ -431,7 +431,8 @@ namespace liz {
    struct Function : structured_value<Function> {
       using Niladic = Data::Value (*)(Data::Abstract);
       using Unary = Data::Value (*)(Data::Abstract, const Arguments&, Data::Value);
-      using Binary = Data::Value (*)(Data::Abstract, Data::Value, Data::Value);
+      using Binary = Data::Value (*)(Data::Abstract, const Arguments&,
+                                     Data::Value, Data::Value);
       using Ternary = Data::Value (*)(Data::Abstract, const Arguments&,
                                       Data::Value, Data::Value, Data::Value);
 

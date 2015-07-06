@@ -1881,6 +1881,40 @@ namespace liz {
       return { fun, args };
    }
 
+   static inline TypeElaboration
+   source_type_at(const ProductType& pt, std::size_t n) {
+      return pt.source()[n]->type();
+   }
+
+   static FullApplication
+   debug_acceptable_arguments(BasicContext& ctx, DependentElaboration fun,
+                              const AstSequence& arglist) {
+      const ProductType* pt = fun.type();
+      const std::size_t nargs = arglist.size();
+      if (nargs != pt->arity()) {
+         std::ostringstream os;
+         os << "have " << arglist.size() << " arguments, but `"
+            << pretty(fun.code()) << ":" << pretty(fun.type())
+            << "` has arity of " << pt->arity();
+         semantics_error(ctx, os.str());
+      }
+      Arguments args(nargs);
+      for (std::size_t i = 0; i < nargs; ++i) {
+         if (auto arg = ctx->elaborate(arglist[i], source_type_at(*pt,i)))
+            args[i] = arg;
+         else {
+            std::ostringstream os;
+            os << "cannot elaborate `";
+            prefix_form(os, arglist[i]) << "` to type `";
+            os << pretty(source_type_at(*pt,i)) << '`';
+            semantics_error(ctx, os.str());
+            return { };
+         }
+      }
+      arguments_satisfy_restriction(ctx, *fun.type(), args);
+      return { fun, args };
+   }
+
    // Subroutine of is_viable_call.
    // Return true if 'fun' is a viable candidate function of the
    // list of arguments  `args'.
@@ -1899,11 +1933,6 @@ namespace liz {
             return { };
       }
       return { fun, args };
-   }
-
-   static inline TypeElaboration
-   source_type_at(const ProductType& pt, std::size_t n) {
-      return pt.source()[n]->type();
    }
 
    // Subroutine of is_viable_call.
@@ -1977,12 +2006,28 @@ namespace liz {
          const Expression* qexpr;
          explicit operator bool() const { return arrow != nullptr; }
       };
+
+      struct UniversalProduct {
+         const Formals formals;
+         Elaboration constraint;
+         const ProductType* const product;
+         const Expression* qexpr;
+         explicit operator bool() const { return product != nullptr; }
+      };
    }
 
    static void
    print_instantiation_request(BasicContext& ctx, const UniversalArrow& ua) {
       ctx->debug() << "========== instantiate_arrow ==========\n";
       ctx->debug() << "\ttype: " << show_expr(ua.arrow) << '\n';
+      ctx->debug() << "\tqexpr: " << show_expr(ua.qexpr) << '\n';
+      ctx->debug() << "=======================================\n";
+   }
+
+   static void
+   print_instantiation_request(BasicContext& ctx, const UniversalProduct& ua) {
+      ctx->debug() << "========== instantiate_arrow ==========\n";
+      ctx->debug() << "\ttype: " << show_expr(ua.product) << '\n';
       ctx->debug() << "\tqexpr: " << show_expr(ua.qexpr) << '\n';
       ctx->debug() << "=======================================\n";
    }
@@ -2044,6 +2089,30 @@ namespace liz {
          return fun;
       }
       SimpleFuncElaboration ftype { ua.arrow, ua.qexpr };
+      if (evidence != nullptr)
+         ftype = substitute(ctx.elaborator(), ftype, *evidence);
+      ftype = substitute(ctx.elaborator(), ftype, subst);
+      remember_closed_specialization(ctx, subst, ftype);
+      return ftype;
+   }
+
+   static DependentElaboration
+   instantiate_product(BasicContext& ctx, const UniversalProduct& ua,
+                       const Substitution& subst, const Evidence* evidence)
+   {
+      if (ctx->enabled(debug::instantiation))
+         print_instantiation_request(ctx, ua);
+      auto e = evaluate(ctx.elaborator(), { ua.product, ua.qexpr });
+      if (auto lam = is<Lambda>(e)) {
+         DependentElaboration fun { ua.product, lam->body().code() };
+         // FIXME: `e` is not being used. Why not?
+         if (evidence != nullptr)
+            fun = substitute(ctx.elaborator(), fun, *evidence);
+         fun = substitute(ctx.elaborator(), fun, subst);
+         remember_closed_specialization(ctx, subst, fun);
+         return fun;
+      }
+      DependentElaboration ftype { ua.product, ua.qexpr };
       if (evidence != nullptr)
          ftype = substitute(ctx.elaborator(), ftype, *evidence);
       ftype = substitute(ctx.elaborator(), ftype, subst);
@@ -2152,6 +2221,29 @@ namespace liz {
       return args;
    }
 
+   static Arguments
+   unify_arguments(BasicContext& ctx, UnificationContext& uctx,
+                   const UniversalProduct& up, const AstSequence& argsyn)
+   {
+      const auto nargs = argsyn.size();
+      check_arity(ctx, nargs, up.product->arity());
+
+      Arguments args(nargs);
+      for (std::size_t i = 0; i < nargs; ++i) {
+         args[i] = ctx->elaborate(argsyn[i]);
+         auto t = source_type_at(*up.product, i);;
+         apply_top_level_coerce(ctx, args[i], t);
+         print_matching_problem(ctx, args[i].type(), t);
+         if (not uctx.match_type({ ctx->get_typename(), args[i].type() }, t)) {
+            print_no_matching_solution(ctx);
+            unification_error(ctx, args[i], t);
+            return { };
+         }
+         print_substitution(ctx, uctx.subst);
+      }
+      return args;
+   }
+
    static void
    unify_result_type(BasicContext& ctx, UnificationContext& uctx,
                      const UniversalArrow& ua, const Type* target)
@@ -2161,11 +2253,19 @@ namespace liz {
                          ua.arrow->target().code());
    }
 
+   static void
+   unify_result_type(BasicContext& ctx, UnificationContext& uctx,
+                     const UniversalProduct& up, const Type* target)
+   {
+      if (target != nullptr)
+         uctx.match_type(type_elaboration(ctx, target),
+                         up.product->target().code());
+   }
+
    static FullApplication
    instantiate_if_viable_call(BasicContext& ctx, const UniversalArrow& ua,
-                              const AstSequence& argsyn, const Type* target) {
-      
-
+                              const AstSequence& argsyn, const Type* target)
+   {
       UnificationContext uctx { ctx.elaborator(), ua.formals, { } };
       Arguments args = unify_arguments(ctx, uctx, ua, argsyn);
       unify_result_type(ctx, uctx, ua, target);
@@ -2180,11 +2280,41 @@ namespace liz {
    }
 
    static FullApplication
+   instantiate_if_viable_call(BasicContext& ctx, const UniversalProduct& up,
+                              const AstSequence& argsyn, const Type* target)
+   {
+      UnificationContext uctx { ctx.elaborator(), up.formals, { } };
+      Arguments args = unify_arguments(ctx, uctx, up, argsyn);
+      unify_result_type(ctx, uctx, up, target);
+      check_all_formals_have_values(ctx, up.formals, uctx);
+
+      auto ev = constraint_satisfied(ctx, up.constraint, uctx.subst);
+      auto fun = instantiate_product(ctx, up, uctx.subst, ev);
+      arguments_satisfy_restriction(ctx, *fun.type(), args);
+      auto product_t = fun.type();
+      for (std::size_t i = 0; i < argsyn.size(); ++i)
+         args[i] = ctx->coerce(args[i], source_type_at(*product_t, i));
+      return { fun, args };
+   }
+
+   static FullApplication
    try_instantiate_if_viable_call(BasicContext& ctx, const UniversalArrow& ua,
                                   const AstSequence& argsyn, const Type* target)
    {
       try {
          return instantiate_if_viable_call(ctx, ua, argsyn, target);
+      }
+      catch (...) {
+         return { };
+      }
+   }
+
+   static FullApplication
+   try_instantiate_if_viable_call(BasicContext& ctx, const UniversalProduct& up,
+                                  const AstSequence& argsyn, const Type* target)
+   {
+      try {
+         return instantiate_if_viable_call(ctx, up, argsyn, target);
       }
       catch (...) {
          return { };
@@ -2201,6 +2331,16 @@ namespace liz {
       return { { },{ }, nullptr, nullptr };  // FIXME: should be { }, silly GCC.
    }
 
+   static UniversalProduct
+   universal_product(Elaboration e) {
+      if (auto qt = is<QuantifiedType>(e.type())) {
+         if (qt->quantifier() == Quantifier::forall)
+            if (auto ftype = is<ProductType>(qt->abstract_instance()))
+               return { qt->formals(), qt->constraint(), ftype, e.code() };
+      }
+      return { { },{ }, nullptr, nullptr };  // FIXME: should be { }, silly GCC.
+   }
+
    static FullApplication
    is_viable_call(BasicContext& ctx, Elaboration e, const AstSequence& args,
                   const Type* target)
@@ -2211,6 +2351,8 @@ namespace liz {
          return acceptable_arguments(ctx, f, args);
       else if (auto ua = universal_arrow(e))
          return try_instantiate_if_viable_call(ctx, ua, args, target);
+      else if (auto up = universal_product(e))
+         return try_instantiate_if_viable_call(ctx, up, args, target);
       return { };
    }
 
@@ -2269,6 +2411,14 @@ namespace liz {
          ctx->coerce(e, target);
       } else if (auto ua = universal_arrow(cand)) {
          auto fapp = instantiate_if_viable_call(ctx, ua, args, target);
+         auto e = call_with(ctx, builder, fapp);
+         ctx->coerce(e, target);
+      } else if(auto f = is_dependent_functoid(ctx, cand)) {
+         auto fapp = debug_acceptable_arguments(ctx, f, args);
+         auto e = call_with(ctx, builder, fapp);
+         ctx->coerce(e, target);
+      } else if (auto up = universal_product(cand)) {
+         auto fapp = instantiate_if_viable_call(ctx, up, args, target);
          auto e = call_with(ctx, builder, fapp);
          ctx->coerce(e, target);
       } else {

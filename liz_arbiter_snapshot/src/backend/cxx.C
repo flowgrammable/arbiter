@@ -452,6 +452,13 @@ namespace liz {
                result = cg.depot.fun_type.make(src, cg.translate(t.target()));
             }
 
+            void visit(const liz::ProductType& t) {
+               Sequence<cxx::Type> src(t.arity());
+               for (std::size_t i = 0; i < t.arity(); ++i)
+                  src[i] = cg.translate(t.argument(i)->type());
+               result = cg.depot.fun_type.make(src, cg.translate(t.target()));
+            }
+
             void visit(const liz::ReadonlyType& t) {
                result = cg.depot.const_type.make(cg.translate(t.type()));
             }
@@ -1279,6 +1286,15 @@ namespace liz {
          return false;
       }
 
+      static const BinaryBuiltinFunction*
+      packet_safe_spec(const Expression* e) {
+         if (auto f = is<BinaryBuiltinFunction>(e))
+            if (auto name = f->link_name().name())
+               if (name->symbol().string() == "packet_safe")
+                  return f;
+         return nullptr;
+      }
+
       Backend::register_result Backend::register_specialization(Elaboration e) {
          if (auto lam = is<liz::Lambda>(e.code())) {
             if (exists_in_context(comp, *lam))
@@ -1294,6 +1310,8 @@ namespace liz {
                return Backend::register_result::first_occurance;
             } else
                return Backend::register_result::already_registered;
+         } else if (packet_safe_spec(e.code())) {
+            return Backend::register_result::first_occurance;
          } else
             internal_error("cannot register non-lambda specializations");
          return Backend::register_result::already_registered;
@@ -1340,6 +1358,85 @@ namespace liz {
          return nullptr;
       }
 
+      const cxx::FunType*
+      make_packet_safe_spec_type(Backend& be, const BinaryBuiltinFunction& f) {
+         Sequence<cxx::Type> src(2);
+            src[0] = be.translate(is<liz::Type>(f.params()[1].code()));
+            src[1] = be.translate(is<liz::Type>(f.params()[2].code()));
+         return be.depot.fun_type.make(src, be.translate(be.comp.get_bool()));
+      }
+
+      // FIXME: Should contain types.
+      Symbol
+      make_packet_safe_spec_name(Backend& be, const BinaryBuiltinFunction&) {
+         std::string str("packet_safe");
+         // str += "_TODO";
+         // str += "_";
+         return be.comp.intern(str);
+      }
+
+      int
+      goto_field(const BinaryBuiltinFunction& f) {
+         if (auto arrow_t = is<ArrowType>(f.link_name().type())) {
+            if (auto rec_t = is<RecordType>(arrow_t->source()[1].code())) {
+               for (int i = 0; (std::size_t)i != rec_t->components().size(); ++i)
+                  if (rec_t->components()[i]->tag()->symbol().string() == "goto_id")
+                     return i;
+            }
+         }
+         return -1;
+      }
+
+      Symbol
+      make_packet_safe_def(Backend& be, const BinaryBuiltinFunction& f) {
+         std::string str("std::vector<int> delta = { 0, 1 };\n");
+         str += "   // Key safety\n";
+         if (auto k = is<Key>(f.params()[0].code())) {
+            for (auto i: *k) {
+               str += "   if (std::find(delta.begin(), delta.end(), "
+                    + std::to_string(i.first) + ") == delta.end())\n";
+               str += "      return false;\n";
+            }
+         }
+         str += "    // FIXME: No instruction safety!!\n";
+         str += "   // Goto safety\n";
+         auto pos = goto_field(f);
+         if (pos != -1) {
+            str += "   if (std::get<" + std::to_string(pos)
+                 + ">(i) == Uint<8>(0))\n";
+            str += "      return true;\n";
+         }
+         str += "   return true;\n";
+         return be.comp.intern(str);
+      }
+
+      Abstraction
+      make_packet_safe_spec_abs(Backend& be, const BinaryBuiltinFunction& f,
+                                const cxx::FunType& func_t)
+      {
+         Sequence<Parm> params(2);
+            params[0] = be.depot.parm_decl.
+                           make(be.comp.intern("ms"), func_t.source()[0]);
+            params[1] = be.depot.parm_decl.
+                           make(be.comp.intern("i"), func_t.source()[1]);
+         Sequence<Stmt> stmts(1);
+            auto sym = make_packet_safe_def(be, f);
+            auto id_e = be.depot.id_expr.make(sym);
+            auto expr_s = be.depot.expr_stmt.make(id_e);
+            stmts[0] = expr_s;
+         return { params, stmts };
+      }
+
+      const cxx::FunDef*
+      make_packet_safe_spec(Backend& be, const BinaryBuiltinFunction& f) {
+         // static std::size_t i = 0;
+         auto name = make_packet_safe_spec_name(be, f);
+         auto func_t = make_packet_safe_spec_type(be,f);
+         auto abs_e = make_packet_safe_spec_abs(be, f, *func_t);
+         return be.depot.fun_def.make(name, func_t, abs_e);
+      }
+
+
       const cxx::Decl*
       specs_to_decl(Backend& be, Elaboration e) {
          if (be.register_specialization(e) ==
@@ -1359,6 +1456,8 @@ namespace liz {
                   return translate_type_instance(be, *inst);
                else
                   internal_error("trying to specialize a value instance");
+            } else if (auto f = packet_safe_spec(e.code())) {
+               return make_packet_safe_spec(be, *f);
             }
             internal_error("cannot translate specialization");
          }

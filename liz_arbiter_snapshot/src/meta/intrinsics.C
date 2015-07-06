@@ -137,6 +137,14 @@ namespace liz {
       return Data::Value(Op(c, v));
    }
 
+   template <Data::Value Op(Data::Abstract, Data::Value, Data::Value)>
+   static Data::Value
+   no_params_2(Data::Abstract c, const Arguments&, Data::Value v0,
+               Data::Value v1)
+   {
+      return Data::Value(Op(c, v0, v1));
+   }
+
    template <Data::Value Op(Data::Abstract,Data::Value,Data::Value,Data::Value)>
    static Data::Value
    no_params_3(Data::Abstract c, const Arguments&, Data::Value v0,
@@ -312,115 +320,118 @@ namespace liz {
 
    const BinaryIntrinsic binary_intrinsic_table[] = {
       { { "/\\", true },
-        builtin_binary<bool, std::logical_and<bool>>,
+        no_params_2<builtin_binary<bool, std::logical_and<bool>>>,
         { "bool", { "bool", "bool" } } },
       { { "\\/", true },
-        builtin_binary<bool, std::logical_or<bool>>,
+        no_params_2<builtin_binary<bool, std::logical_or<bool>>>,
         { "bool", { "bool", "bool" } } },
       { { "/\\", true },
-        builtin_binary<byte, std::bit_and<byte>>,
+        no_params_2<builtin_binary<byte, std::bit_and<byte>>>,
         { "byte", { "byte", "byte" } } }, 
       { { "\\/", true },
-        builtin_binary<byte, std::bit_or<byte>>,
+        no_params_2<builtin_binary<byte, std::bit_or<byte>>>,
         { "byte", { "byte", "byte" } } }, 
       { { "/\\", true },
-        builtin_binary<intmax_t, std::bit_and<intmax_t>>,
+        no_params_2<builtin_binary<intmax_t, std::bit_and<intmax_t>>>,
         { "int", { "int", "int" } } }, 
       { { "\\/", true },
-        builtin_binary<intmax_t, std::bit_or<intmax_t>>,
+        no_params_2<builtin_binary<intmax_t, std::bit_or<intmax_t>>>,
         { "int", { "int", "int" } } },
       { { "+", true },
-        builtin_binary<intmax_t, std::plus<intmax_t>>,
+        no_params_2<builtin_binary<intmax_t, std::plus<intmax_t>>>,
         { "int", { "int", "int" } } },
       { { "+", true },
-        builtin_binary<double, std::plus<double>>,
+        no_params_2<builtin_binary<double, std::plus<double>>>,
         { "double", { "double", "double" } } },
       { { "-", true },
-        builtin_binary<intmax_t, std::minus<intmax_t>>,
+        no_params_2<builtin_binary<intmax_t, std::minus<intmax_t>>>,
         { "int", { "int", "int" } } },
       { { "-", true },
-        builtin_binary<double, std::minus<double>>,
+        no_params_2<builtin_binary<double, std::minus<double>>>,
         { "double", { "double", "double" } } },
       { { "*", true },
-        builtin_binary<intmax_t, std::multiplies<intmax_t>>,
+        no_params_2<builtin_binary<intmax_t, std::multiplies<intmax_t>>>,
         { "int", { "int", "int" } } },
       { { "*", true },
-        builtin_binary<double, std::multiplies<double>>,
+        no_params_2<builtin_binary<double, std::multiplies<double>>>,
         { "double", { "double", "double" } } },
       { { "div", true },
-        builtin_div_int<std::divides<intmax_t>>,
+        no_params_2<builtin_div_int<std::divides<intmax_t>>>,
         { "int", { "int", "int" } } },
       { { "rem", true },
-        builtin_binary<intmax_t, std::modulus<intmax_t>>,
+        no_params_2<builtin_binary<intmax_t, std::modulus<intmax_t>>>,
         { "int", { "int", "int" } } },
       { { "/", true },
-        builtin_binary<double, std::divides<double>>,
+        no_params_2<builtin_binary<double, std::divides<double>>>,
         { "double", { "double", "double" } } },
       { { ">", true },
-        builtin_binary<byte, std::greater<byte>>,
+        no_params_2<builtin_binary<byte, std::greater<byte>>>,
         { "bool", { "byte", "byte" } } },
       { { ">", true },
-        builtin_binary<intmax_t, std::greater<intmax_t>>,
+        no_params_2<builtin_binary<intmax_t, std::greater<intmax_t>>>,
         { "bool", { "int", "int" } } },
       { { ">", true },
-        builtin_binary<double, std::greater<double>>,
+        no_params_2<builtin_binary<double, std::greater<double>>>,
         { "bool", { "double", "double" } } },
       { { ">=", true },
-        builtin_binary<byte, std::greater_equal<byte>>,
+        no_params_2<builtin_binary<byte, std::greater_equal<byte>>>,
         { "bool", { "byte", "byte" } } },
       { { ">=", true },
-        builtin_binary<intmax_t, std::greater_equal<intmax_t>>,
+        no_params_2<builtin_binary<intmax_t, std::greater_equal<intmax_t>>>,
         { "bool", { "int", "int" } } },
       { { ">=", true },
-        builtin_binary<double, std::greater_equal<double>>,
+        no_params_2<builtin_binary<double, std::greater_equal<double>>>,
         { "bool", { "double", "double" } } },
       { { "<", true },
-        builtin_binary<byte, std::less<byte>>,
+        no_params_2<builtin_binary<byte, std::less<byte>>>,
         { "bool", { "byte", "byte" } } },
       { { "<", true },
-        builtin_binary<intmax_t, std::less<intmax_t>>,
+        no_params_2<builtin_binary<intmax_t, std::less<intmax_t>>>,
         { "bool", { "int", "int" } } },
       { { "<", true },
-        builtin_binary<double, std::less<double>>,
+        no_params_2<builtin_binary<double, std::less<double>>>,
         { "bool", { "double", "double" } } },
       { { "<=", true },
-        builtin_binary<byte, std::less_equal<byte>>,
+        no_params_2<builtin_binary<byte, std::less_equal<byte>>>,
         { "bool", { "byte", "byte" } } },
       { { "<=", true },
-        builtin_binary<intmax_t, std::less_equal<intmax_t>>,
+        no_params_2<builtin_binary<intmax_t, std::less_equal<intmax_t>>>,
         { "bool", { "int", "int" } } },
       { { "<=", true },
-        builtin_binary<double, std::less_equal<double>>,
+        no_params_2<builtin_binary<double, std::less_equal<double>>>,
         { "bool", { "double", "double" } } },
       { { "==", true },
-        builtin_binary<bool, std::equal_to<bool>>,
+        no_params_2<builtin_binary<bool, std::equal_to<bool>>>,
         { "bool", { "bool", "bool" } } },
       { { "==", true },
-        builtin_binary<byte, std::equal_to<byte>>,
+        no_params_2<builtin_binary<byte, std::equal_to<byte>>>,
         { "bool", { "byte", "byte" } } },
       { { "==", true },
-        builtin_binary<intmax_t, std::equal_to<intmax_t>>,
+        no_params_2<builtin_binary<intmax_t, std::equal_to<intmax_t>>>,
         { "bool", { "int", "int" } } },
       { { "==", true },
-        builtin_binary<double, std::equal_to<double>>,
+        no_params_2<builtin_binary<double, std::equal_to<double>>>,
         { "bool", { "double", "double" } } },
-      { { "==", true }, intrinsic_key_eq, { "bool", { "Key", "Key" } } },
-      { { "!=", true }, intrinsic_key_ineq, { "bool", { "Key", "Key" } } },
+      { { "==", true }, no_params_2<intrinsic_key_eq>,
+        { "bool", { "Key", "Key" } } },
+      { { "!=", true }, no_params_2<intrinsic_key_ineq>,
+        { "bool", { "Key", "Key" } } },
       { { "!=", true },
-        builtin_binary<bool, std::not_equal_to<bool>>,
+        no_params_2<builtin_binary<bool, std::not_equal_to<bool>>>,
         { "bool", { "bool", "bool" } } },
       { { "!=", true },
-        builtin_binary<byte, std::not_equal_to<byte>>,
+        no_params_2<builtin_binary<byte, std::not_equal_to<byte>>>,
         { "bool", { "byte", "byte" } } },
       { { "!=", true },
-        builtin_binary<intmax_t, std::not_equal_to<intmax_t>>,
+        no_params_2<builtin_binary<intmax_t, std::not_equal_to<intmax_t>>>,
         { "bool", { "int", "int" } } },
       { { "!=", true },
-        builtin_binary<double, std::not_equal_to<double>>,
+        no_params_2<builtin_binary<double, std::not_equal_to<double>>>,
         { "bool", { "double", "double" } } },
-      { { "==", true }, intrinsic_type_eq, { "bool", { "type", "type" } } },
+      { { "==", true }, no_params_2<intrinsic_type_eq>,
+        { "bool", { "type", "type" } } },
       { { "FixedArray", false },
-        intrinsic_fixed_array_ctor, { "type", "type", "int" } }
+        no_params_2<intrinsic_fixed_array_ctor>, { "type", "type", "int" } }
    };
 
    namespace {
@@ -577,7 +588,9 @@ namespace liz {
       }
 
       static Data::Value
-      intrinsic_array_at(Data::Abstract, Data::Value ref_v, Data::Value n_v) {
+      intrinsic_array_at(Data::Abstract, const Arguments&, Data::Value ref_v,
+                         Data::Value n_v)
+      {
          Data::Array& v = *static_cast<Data::Array*>(Data::Location(ref_v));
          intmax_t n = n_v;
          if (n < 0)
@@ -857,7 +870,7 @@ namespace liz {
          auto quant_t = ctx->make_quantified_type(Quantifier::forall,
                                                   Formals{ n }, t, { });
          const Function* func = ctx->build_builtin(name, arrow_t,
-            builtin_binary<uintmax_t, Op<uintmax_t>>, { });
+            no_params_2<builtin_binary<uintmax_t, Op<uintmax_t>>>, { });
          auto lam = ctx->build_lambda(func->link_name(), Formals{ n },
                                       { arrow_t, func });
          Elaboration e { quant_t, lam };
@@ -874,7 +887,7 @@ namespace liz {
          auto quant_t = ctx->make_quantified_type(Quantifier::forall,
                                                   Formals{ n }, t, { });
          const Function* func = ctx->build_builtin(name, arrow_t,
-            builtin_binary<uintmax_t, Op<uintmax_t>>, { });
+            no_params_2<builtin_binary<uintmax_t, Op<uintmax_t>>>, { });
          auto lam = ctx->build_lambda(func->link_name(), Formals{ n },
                                       { arrow_t, func });
          Elaboration e { quant_t, lam };
@@ -891,7 +904,7 @@ namespace liz {
          auto quant_t = ctx->make_quantified_type(Quantifier::forall,
                                                   Formals{ n }, t, { });
          const Function* func = ctx->build_builtin(name, arrow_t,
-            builtin_binary<uintmax_t, Op<uintmax_t>>, { });
+            no_params_2<builtin_binary<uintmax_t, Op<uintmax_t>>>, { });
          auto lam = ctx->build_lambda(func->link_name(), Formals{ n },
                                       { arrow_t, func });
          Elaboration e { quant_t, lam };
@@ -1251,7 +1264,7 @@ namespace liz {
 
       static Data::Value
       intrinsic_match_set_safety(Data::Abstract env, const Arguments& args,
-                                 Data::Value v)
+                                 Data::Value v, Data::Value)
       {
          auto ctx = static_cast<Evaluator*>(env);
          auto& rec = *static_cast<const Record*>(v);
@@ -1259,10 +1272,10 @@ namespace liz {
             { subset_key::internal_val, subset_key::ethernet_val };
          if (args.size() != 1)
             internal_error("dude, someone messed up the definition of "
-                           " `safe_match_set`");
+                           " `packet_safe`");
          auto key = is<Key>(args.front().code());
          if (key == nullptr)
-            internal_error("couldn't reduce key of `safe_match_set`");
+            internal_error("couldn't reduce key of `packet_safe`");
          for (auto k: *key) {
             if (std::find(delta.begin(), delta.end(), k.first) == delta.end())
                return Data::Value(false);
@@ -1273,13 +1286,22 @@ namespace liz {
 
       void
       define_match_set_safety(Elaborator& ctx) {
-         auto name = make_identifier(&ctx, "safe_match_set");
+         auto name = make_identifier(&ctx, "packet_safe");
          auto k = gen_keyvar_formal(ctx, "k");
-         auto arrow_t = make_arrow_type(&ctx, ctx.get_bool(), ms_type(ctx, *k));
+         auto M_f = gen_tvar_formal(&ctx, "M");
+         auto I_f = gen_tvar_formal(&ctx, "I");
+         auto M_t = to_type_var(&ctx, M_f);
+         auto I_t = to_type_var(&ctx, I_f);
+         auto arrow_t =
+            make_arrow_type(&ctx, ctx.get_bool(), M_t, I_t);
+         Arguments args(3);
+            args[0] = { ctx.get_key(), k };
+            args[1] = { ctx.get_typename(), M_t };
+            args[2] = { ctx.get_typename(), I_t };
          const Function* func =
-            ctx.build_builtin(name, arrow_t, intrinsic_match_set_safety,
-               Arguments(1,Elaboration{ k->type().code(), k }));
-         auto e = abstract_builtin_over(&ctx, Formals(k), arrow_t, func);
+            ctx.build_builtin(name, arrow_t, intrinsic_match_set_safety, args);
+         Formals fs(3); fs[0] = k; fs[1] = M_f; fs[2] = I_f;
+         auto e = abstract_builtin_over(&ctx, fs, arrow_t, func);
          ctx.global_scope()->define(name, e.type(), e.code());
       }
 
@@ -1294,7 +1316,8 @@ namespace liz {
       { return nullptr; }
 
       Data::Value
-      intrinsic_binary_no_op(Data::Abstract, Data::Value, Data::Value)
+      intrinsic_binary_no_op(Data::Abstract, const Arguments&, Data::Value,
+                             Data::Value)
       { return nullptr; }
 
       Data::Value

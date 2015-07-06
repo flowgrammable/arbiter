@@ -179,6 +179,9 @@ namespace liz {
       void visit(const ArrowType& x) {
          result = substitute(ctx, &x, map);
       }
+      void visit(const ProductType& x) {
+         result = substitute(ctx, &x, map);
+      }
       void visit(const ReadonlyType& x) {
          result = ctx->make_readonly_type(substitute(ctx, x.type(), map));
       }
@@ -462,11 +465,16 @@ namespace liz {
                return;
             }
             // What if the formal
-            if (auto r = is<Read>(s.code()))
+            if (auto r = is<Read>(s.code())) {
                if (is<Formal>(r->address().code())) {
                   result.code(s.code());
                   return;
                }
+               if (is<LinkName>(r->address().code())) {
+                  result.code(s.code());
+                  return;
+               }
+            }
             result.code(ctx->build_read(s));
          }
          void visit(const Initializer& x) {
@@ -1489,7 +1497,7 @@ namespace liz {
          return { };
       if (not are_values(args))
          return { };
-      auto res = Data::Location(fun.code()(&ctx,
+      auto res = Data::Location(fun.code()(&ctx, fun.params(),
          unreify({ args[0].type(), args[0].code() }).value(),
          unreify({ args[1].type(), args[1].code() }).value()));
       auto target_t = fun.type()->target().code();
@@ -2257,7 +2265,8 @@ namespace liz {
       else if (auto fun = is<UnaryBuiltinFunction>(f))
          return fun->code()(env, fun->params(), args[0].value());
       else if (auto fun = is<BinaryBuiltinFunction>(f))
-         return fun->code()(env, args[0].value(), args[1].value());
+         return fun->code()(env, fun->params(), args[0].value(),
+                            args[1].value());
       else if (auto fun = is<TernaryBuiltinFunction>(f))
          return fun->code()(env, fun->params(), args[0].value(),
                             args[1].value(), args[2].value());
@@ -2341,7 +2350,7 @@ namespace liz {
       Object arg1 = env->eval(x.rhs());
       CallFrameManager frame(env, x.function());
       if (auto fun = is<BinaryBuiltinFunction>(f))
-         return fun->code()(env, arg0.value(), arg1.value());
+         return fun->code()(env, fun->params(), arg0.value(), arg1.value());
       else if (auto fun = is<Lambda>(f))
          return evaluate(env, frame, fun, { arg0, arg1 }); 
       else
