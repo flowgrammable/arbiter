@@ -1,0 +1,4 @@
+// Contributed by Jordan P. Donais
+
+define foo(num : int) : int | 3 > 2 = { return num; }
+

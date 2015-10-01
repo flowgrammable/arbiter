@@ -1,0 +1,95 @@
+-- Copyright (C) 2013, Texas A&M University
+-- Copyright (C) 2014-2015, Gabriel Dos Reis.
+-- All rights reserved.
+-- Written by Michael Lopez.
+--
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are
+-- met:
+--
+--     - Redistributions of source code must retain the above copyright
+--       notice, this list of conditions and the following disclaimer.
+--
+--     - Redistributions in binary form must reproduce the above copyright
+--       notice, this list of conditions and the following disclaimer in
+--       the documentation and/or other materials provided with the
+--       distribution.
+--
+--     - Neither the name of Liz, nor the names of its contributors may
+--       be used to endorse or promote products derived from this software
+--       without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+-- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+-- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+-- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+-- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+
+import "Liz/Types/Opt.liz"
+
+
+
+prolong Liz: namespace =
+
+  -- | A list data type
+  define List(X: type): type = inductive
+    nil:  List(X)
+    cons: (X, List(X)) -> List(X)
+
+  -- | Extract the first element of a list if one exists.
+  define forall(A:type), first(as: List A): Opt A =
+    match as with
+      case cons(a, as0) => some a
+      case nil          => none
+
+  -- | Extract the last element of a list if one exists.
+  define forall(A:type), last(as: List A): Opt A =
+    match as with
+      case cons(a, as0) => match as0 with
+        case cons(x0, x1) => last(as0)
+        case nil          => some a
+      case nil          => none
+
+  -- | True iff the list is `nil`.
+  define forall(A:type), is_empty(xs: List A): bool =
+    match xs with
+      case nil         => true
+      case cons(x,xss) => false
+
+  -- | Returns the number of elements in the list.
+  define forall(A:type), length(xs: List A): int =
+    match xs with
+      case nil         => 0
+      case cons(x,xss) => 1 + length xss
+
+  -- | Elements that do not satisfy `p` will be removed from list `xs`.
+  define forall(A:type), filter(xs: List A, p: (A) -> bool): List A =
+    match xs with
+      case nil         => nil
+      case cons(x,xs0) => if p x then cons(x, filter(xs0, p)) else filter(xs0,p)
+
+  -- | Fold right.
+  define forall(A:type, B:type), foldr(op:(A,B) -> B, b: B, as: List A): B =
+    match as with
+      case nil          => b
+      case cons(a0,as0) => op(a0, foldr(op, b, as0))
+
+  -- | Fold left.
+  define forall(A:type, B:type), foldl(op:(B,A) -> B, b: B, as: List A): B =
+    match as with
+      case nil          => b
+      case cons(a0,as0) => op(foldl(op, b, as0), a0)
+
+  -- | Compute the sum of integers.
+  define sum(l: List int): int = foldr((+)@((int,int) -> int), 0, l)
+
+  -- | Compute the produce of integers
+  define product(l: List int): int = foldr((*)@((int,int) -> int), 1, l)

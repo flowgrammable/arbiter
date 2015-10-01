@@ -1,0 +1,7 @@
+-- Use of namespace elements
+
+define stuff:namespace =
+  define a:int = 1
+  define f(n:int):int = n + 20
+
+stuff.f(stuff.a)

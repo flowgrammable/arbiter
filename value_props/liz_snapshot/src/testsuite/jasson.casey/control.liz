@@ -1,0 +1,15 @@
+return 0 ;
+leave 0 ;
+throw x ;
+
+leave 0 .. x ;
+
+throw x .. ;
+
+if x then ;
+if y then ; else ;
+
+switch (x) { 
+   case int => return 0 .. 0;
+}
+

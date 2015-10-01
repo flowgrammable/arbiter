@@ -1,0 +1,320 @@
+-- import "/home/michael/repos/liz/branches/concepts/src/testsuite/flow/matching_algorithm.liz"
+
+
+-- List of todos.
+import "Basic/FIXME.liz"
+
+-- Contains stubs that should be removed by the time everything is finished.
+-- There is a dependency issue here.
+import "Basic/DataType.liz"
+import "Basic/Packet.liz"
+import "Basic/Table.liz"
+
+
+
+--------------------
+--| Test Packets |--
+--------------------
+
+define mk_pkt1(): Packet =
+  define eth_dat: EthernetData = per [ per 0, per 0, unknown ]
+  define ipv6_dat: IPL = ipv6(per [ unknown, unknown, unknown, unknown])
+  return per [ eth_dat, ipv6_dat, TCP(unknown, unknown) ]
+
+define mk_pkt2(): Packet =
+  define eth_dat: EthernetData = per [ per 34, per 99, unknown ]
+  define ipv6_dat: IPL = ipv6(per [ unknown, unknown, unknown, unknown])
+  return per [ eth_dat, ipv6_dat, TCP(unknown, unknown) ]
+
+define mk_pkt3(): Packet =
+  define eth_dat: EthernetData = per [ per 34, per 36, unknown ]
+  define ipv6_dat: IPL = ipv6(per [ unknown, unknown, unknown, unknown])
+  return per [ eth_dat, ipv6_dat, TCP(unknown, unknown) ]
+
+define mk_pkt4(): Packet =
+  define eth_dat: EthernetData = per [ per 32, per 36, unknown ]
+  define ipv6_dat: IPL = ipv6(per [ unknown, unknown, unknown, unknown])
+  return per [ eth_dat, ipv6_dat, TCP(unknown, unknown) ]
+
+define pkt1: Packet = mk_pkt1()
+define pkt2: Packet = mk_pkt2()
+define pkt3: Packet = mk_pkt3()
+define pkt4: Packet = mk_pkt4()
+
+
+
+-------------------
+--[ Test Tables ]--
+-------------------
+
+-- Table 1
+define flow_entry1(): Flow =
+  define fm1: FieldMatch = per [ FieldName_src, Literal(34) ]
+  define fms1: Array FieldMatch = mk_array[|FieldMatch|](1)
+  set(fms1, 0, fm1)
+  define m1: Match = per [ Protocol_ethernet, fms1 ]
+  define ms1: Array Match = mk_array[|Match|](1)
+  set(ms1, 0, m1)
+  define goto: GotoInst = per 1
+  return per [ ms1, per [ none, none, none, none, none, some(goto) ] ]
+
+define flow_entry2(): Flow =
+  define fm2: FieldMatch = per [ FieldName_dst, Literal(35) ]
+  define fms2: Array FieldMatch = mk_array[|FieldMatch|](1)
+  set(fms2, 0, fm2)
+  define m2: Match = per [ Protocol_ethernet, fms2 ]
+  define ms2: Array Match = mk_array[|Match|](1)
+  set(ms2, 0, m2)
+  define insts: Array Instruction = mk_array[|Instruction|](1)
+  set(insts, 0, Write(Protocol_ethernet, FieldName_dst, Set, 23))
+  define inst: ApplyInst = per insts
+  define i: InstructionSet = per [ none, some(inst), none, none, none, none ]
+  return per [ ms2, i ]
+
+define mk_tbl1(): Table =
+  define tbl: Array Flow = mk_array[|Flow|](2)
+  set(tbl, 0, flow_entry1())
+  set(tbl, 1, flow_entry2())
+  return per tbl
+
+-- Table 2
+define flow_entry3(): Flow =
+  define fm3: FieldMatch = per [ FieldName_dst, Literal(99) ]
+  define fms3: Array FieldMatch = mk_array[|FieldMatch|](1)
+  set(fms3, 0, fm3)
+  define m3: Match = per [ Protocol_ethernet, fms3 ]
+  define ms3: Array Match = mk_array[|Match|](1)
+  set(ms3, 0, m3)
+  return per [ ms3, mk_null_instruction_set() ]
+
+define mk_tbl2(): Table =
+  define tbl: Array Flow = mk_array[|Flow|](1)
+  set(tbl, 0, flow_entry3())
+  return per tbl
+
+-- Set of tables
+define tbls: Array Table = mk_array[|Table|](2)
+set(tbls, 0, mk_tbl1())
+set(tbls, 1, mk_tbl2())
+
+
+
+
+
+-----------------------
+--[ Match algorithm ]--
+-----------------------
+
+-- FIXME: Unimplemented
+define matches_classifier(c: Classifier, addr: MACAddr): bool =
+  match c with
+    case Wildcard      => true
+    case Literal(n)    => n == rep addr
+    case PrefixMask(n) => false
+    case Mask(n)       => false
+
+-- FIXME: Unimplemented goes here.
+define matches_classifier(c: Classifier, x: Unknown): bool = false
+
+define matches(m: FieldMatch, eth:EthernetData): bool =
+  define field: FieldName = (rep m).name
+  if field == FieldName_src then
+    return matches_classifier((rep m).classifier, (rep eth).src)
+  if field == FieldName_dst then
+    return matches_classifier((rep m).classifier, (rep eth).dst)
+  if field == FieldName_typ then
+    return matches_classifier((rep m).classifier, (rep eth).typ)
+  return false -- This should be statically enforced
+
+define matches(m: Array FieldMatch, eth:EthernetData): bool =
+  define n: int = size[|FieldMatch|](m)
+  define i: int = 0
+  while i != n repeat
+    if not matches(get(m,i), eth) then
+      return false
+    i := i + 1
+  return true
+
+-- Match on packet type
+-- I have trouble believing that the packet structure is treated as flat as this
+define matches(m:Match, pkt: Packet): bool =
+  if (rep m).protocol == Protocol_internal then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_ethernet then
+    return matches((rep m).field_matches ,(rep pkt).eth_dat)
+  if (rep m).protocol == Protocol_vlan then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_mpls then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_arp then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_ipv4 then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_icmpv4 then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_ipv6 then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_icmpv6 then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_tcp then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_sctp then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_udp then
+    return false    -- Unimplemented!
+  else
+    return false    -- Need enumerations in order to avoid having this check.
+
+-- Try to match against a flow
+define matches(flow: Flow, pkt: Packet): Maybe InstructionSet =
+  define a: Array Match = (rep flow).match_set
+  define n: int = size[|Match|](a)
+  define i: int = 0
+  while i != n repeat
+    if not matches(get(a, i), pkt) then
+      return none
+    i := i + 1
+  return some((rep flow).instruction_set)
+
+-- True when there is a table hit
+define get_match(tbl: Table, pkt: Packet): Maybe InstructionSet =
+  define a: Array Flow = (rep tbl)
+  define n: int = size[|Flow|](a)
+  define i: int = 0
+  while i != n repeat
+    define matched: Maybe InstructionSet = matches(get(a,i), pkt)
+    if is_some(matched) then
+      return matched
+    i := i + 1
+  return none
+
+--  FIXME:  What is the context:
+--            Tables
+--            Packet
+--            InstructionSet?
+define get_match(tbls: Array Table, pkt: Packet): bool =
+  define n: int = size[|Table|](tbls)
+  define i: int = 0
+  while i != n repeat
+    match get_match(get(tbls, i), pkt) with
+      case none    => return false
+      case some(x) => match (rep x).goto with
+        case none          => return true
+        case some(tbl_num) => i := rep tbl_num
+  return false
+
+
+-----------------------------
+-- Execute Apply and Write --
+-----------------------------
+
+-- FIXME: Need to statically enforce these...
+define apply_instruction_fld(fld: FieldName, val:int, eth_dat:EthernetData): EthernetData =
+  if fld == FieldName_src then
+    return per [ per val, (rep eth_dat).dst, (rep eth_dat).typ ]
+  if fld == FieldName_dst then
+    return per [ (rep eth_dat).src, per val, (rep eth_dat).typ ]
+  else
+    return eth_dat
+
+
+-- Hmm. Can we use accessor axioms to impose a structure on the packet?
+-- Consult Jasson.
+-- Only action so far is set.
+define apply_instruction(inst: Instruction, pkt: Packet): Packet =
+  match inst with
+    case Write(proto, fld, act, val) =>
+      if proto == Protocol_ethernet then
+        define ipl: IPL = (rep pkt).ipl
+        define tpl: TPL = (rep pkt).tpl
+        define eth_dat: EthernetData = apply_instruction_fld(fld, val, (rep pkt).eth_dat)
+        return per [ eth_dat, ipl, tpl ]
+      else
+        return pkt
+
+define apply_instructions(insts: Array Instruction, pkt:Packet): Packet =
+  define i: int = 0
+  define n: int = size[|Instruction|](insts)
+  while i != n repeat
+    pkt := apply_instruction(get(insts,i), pkt)
+    i := i + 1
+  return pkt
+
+define apply_instructions(insts: Maybe ApplyInst, pkt:Packet): Packet =
+  match insts with
+    case none            => pkt
+    case some(app_insts) => apply_instructions(rep app_insts, pkt)
+
+define apply_instructions(insts: Maybe WriteInst, pkt:Packet): Packet =
+  match insts with
+    case none            => pkt
+    case some(app_insts) => apply_instructions(rep app_insts, pkt)
+
+-- Executes instructions on a packet
+define exec_instruction(inst: InstructionSet, pkt: Packet): Packet =
+  pkt := apply_instructions((rep inst).apply, pkt)
+  pkt := apply_instructions((rep inst).write, pkt)
+  return pkt
+
+
+
+----------------------
+-- Process a packet --
+----------------------
+
+-- Result of a table lookup
+define LookupResult: type = inductive
+  miss: LookupResult                    -- No match; drop packet
+  done: (Packet) -> LookupResult        -- Matched without a goto instruction
+  next: (Packet, int) -> LookupResult   -- Matched and awaiting processing
+
+-- Process a packet by a table
+define process_packet(tbl: Table, pkt: Packet): LookupResult =
+  match get_match(tbl, pkt) with
+    case none       => miss
+    case some(inst) =>
+      define new_pkt: Packet = exec_instruction(inst, pkt)
+      match (rep inst).goto with
+        case none    => done(new_pkt)
+        case some(i) => next(new_pkt, rep i)
+
+-- Process a packet:
+-- Processes a packet by each table until finished.
+define process_packet(tbls: Array Table, pkt: Packet): Maybe Packet =
+  define i: int = 0
+  define n: int = size[|Table|](tbls)
+  while true repeat
+    match process_packet(get(tbls, i), pkt) with
+      case miss =>    return none
+      case done(p) => return some(p)
+      case next(p,j) =>
+        i := j
+        pkt := p
+  return none
+
+
+
+print "pkt1: "
+if is_some(process_packet(tbls, pkt1)) then
+  print "table hit!"
+else
+  print "table miss!"
+print "    "
+print "pkt2: "
+if is_some(process_packet(tbls, pkt2)) then
+  print "table hit!"
+else
+  print "table miss!"
+print "    "
+print "pkt3: "
+if is_some(process_packet(tbls, pkt3)) then
+  print "table hit!"
+else
+  print "table miss!"
+print "    "
+print "pkt4: "
+if is_some(process_packet(tbls, pkt4)) then
+  print "table hit!"
+else
+  print "table miss!"
+print "    "

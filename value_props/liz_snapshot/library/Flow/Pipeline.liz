@@ -1,0 +1,369 @@
+-- Copyright (C) 2013, Texas A&M University
+-- Copyright (C) 2014, Gabriel Dos Reis.
+-- All rights reserved.
+-- Written by Michael Lopez.
+--
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are
+-- met:
+--
+--     - Redistributions of source code must retain the above copyright
+--       notice, this list of conditions and the following disclaimer.
+--
+--     - Redistributions in binary form must reproduce the above copyright
+--       notice, this list of conditions and the following disclaimer in
+--       the documentation and/or other materials provided with the
+--       distribution.
+--
+--     - Neither the name of Liz, nor the names of its contributors may
+--       be used to endorse or promote products derived from this software
+--       without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+-- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+-- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+-- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+-- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+-- The pipeline is the abstraction that processes a packet, control plane, and
+-- data plane.
+
+import "Liz/Flow/Packet.liz"
+import "Liz/Flow/DataPlane.liz"
+
+
+
+------------------------
+--| Auxilliary types |--
+------------------------
+
+-- timestamp in milliseconds
+define Timestamp: type = int
+
+
+
+--------------------
+--| Packet Types |--
+--------------------
+
+-- Some packet contextual information regarding how the packet entered the
+-- the pipeline
+define Internal: type = record
+  in_port:      int
+  in_phy_port:  int
+  tunnel_id:    Unknown
+  metadata:     Unknown
+
+-- The packet as it exists in the pipeline
+define Context: type = record
+  packet:   Packet
+  internal: Internal
+  key:      Unknown
+
+-- Packet information as it exists in a trace (no decode for now)
+-- How does this work in a trace? Is there a timestamp in traces?
+define TracePacket: type = record
+  packet:    Packet
+  timestamp: Timestamp
+  port:      int
+
+define trace_pkt_to_context(tpkt: TracePacket): Context =
+  define pkt: Packet = (rep tpkt).packet
+  define internal: Internal = per [ (rep tpkt).port, 0, unknown, unknown ]
+  define key: Unknown = unknown
+  return per [ pkt, internal, key ]
+
+define get_port(pkt: Context): int = (rep ((rep pkt).internal)).in_port
+define get_eth_dst(ctx: Context): int =
+  -- A case against rep-per if I ever seens ones.
+  -- Another case, this causes a huge lag. Think of it. There are +12 overloads
+  -- for rep at this point. Each overload must resolve at least +12 overloads.
+  -- Since the reps are a depth of 4, this is a total of +12^4 calls to
+  -- resolve candidate
+  define eth: EthernetData = (rep ((rep ctx).packet)).eth_dat
+  return rep ((rep eth).dst)
+define get_eth_src(ctx: Context): int =
+  define eth: EthernetData = (rep ((rep ctx).packet)).eth_dat
+  return rep ((rep eth).src)
+
+
+
+--------------------
+--| Pipeline type |--
+--------------------
+
+define PacketIn: type = record
+  ctx:   Context
+  event: int
+
+-- FIXME: `ports` field should be trace!
+define OutBuffer: type = record
+  ctrl:  Array PacketIn
+  ports: Array Context
+
+define init_out_buffer(): OutBuffer = per [ mk_array 0, mk_array 0 ]
+
+-- Why is data plane in here? It is not modified
+define Pipeline(n:int): type = record
+  ctx:         Context            -- The packet that is being processed
+  dataplane:   DataPlane(n)          -- The flow tables
+  out:         OutBuffer          -- Writing a packet out
+  write_insts: Array Instruction  -- Instructions to be written at the end
+  meter_id:    Unknown            -- ???
+
+
+-- Helper functions for the context
+define get_table(p: Pipeline, i: int): Table =
+  return get(rep((rep p).dataplane).tables, i)
+
+define push_context_to_control(out: OutBuffer, ctx: Context, event: int): OutBuffer =
+  define ctrl: Array PacketIn = cons_back(per [ ctx, event ], (rep out).ctrl)
+  define ports: Array Context = (rep out).ports
+  return per [ ctrl, ports ]
+
+define push_context_to_control(p: ref Pipeline, event: int): void =
+  define ctx: Context =             (rep p).ctx
+  define dataplane: DataPlane =     (rep p).dataplane
+  define out: OutBuffer =           (rep p).out
+  define write: Array Instruction = (rep p).write_insts
+  define meter_id: Unknown =        (rep p).meter_id
+  out := push_context_to_control(out, ctx, event)
+  p := per [ ctx, dataplane, out, write, meter_id ]
+
+define get_context(p: Pipeline): Context = (rep p).ctx
+
+define forall(n:int), init_pipeline(dp: DataPlane(n), ctx: Context): Pipeline =
+  per [ ctx, dp, init_out_buffer(), mk_array 0, unknown ]
+
+define forall(n:int), clear_write_instructions(p: ref Pipeline(n)): void =
+  define ctx: Context =            (rep p).ctx
+  define dataplane: DataPlane(n) =    (rep p).dataplane
+  define out: OutBuffer =          (rep p).out
+  define meter_id: Unknown =       (rep p).meter_id
+  p := per [ ctx, dataplane, out, mk_array 0, meter_id ]
+
+define forall(n:int), queue_write_instructions(p: ref Pipeline(n), insts: Array Instruction): void =
+  define ctx: Context =             (rep p).ctx
+  define dataplane: DataPlane(n) =     (rep p).dataplane
+  define out: OutBuffer =           (rep p).out
+  define write: Array Instruction = (rep p).write_insts
+  define meter_id: Unknown =        (rep p).meter_id
+  -- FIXME: In which order do these instructions get added? I'm assuming
+  p := per [ ctx, dataplane, out, concat(write, insts), meter_id ]
+
+
+
+
+----------------------
+--| Entry matching |--
+----------------------
+
+-- MatchSort is an accessor string. Match is a type.
+-- These algorithms match an instruction to an entry
+-- FIXME: Unimplemented
+define matches_classifier(c: MatchSort, addr: MACAddr): bool =
+  match c with
+    case Wildcard      => true
+    case Exact(n)      => n == rep addr
+    case PrefixMask(n) => false
+    case Mask(n)       => false
+
+-- FIXME: Unimplemented goes here.
+define matches_classifier(c: MatchSort, x: Unknown): bool = false
+
+define matches(m: FieldMatch, eth:EthernetData): bool =
+  define field: FieldName = (rep m).name
+  if field == FieldName_src then
+    return matches_classifier((rep m).value, (rep eth).src)
+  if field == FieldName_dst then
+    return matches_classifier((rep m).value, (rep eth).dst)
+  if field == FieldName_typ then
+    return matches_classifier((rep m).value, (rep eth).typ)
+  return false -- This should be statically enforced
+
+define matches(m: Array FieldMatch, eth:EthernetData): bool =
+  define n: int = size[|FieldMatch|](m)
+  define i: int = 0
+  while i != n repeat
+    if not matches(get(m,i), eth) then
+      return false
+    i := i + 1
+  return true
+
+-- Match on packet type
+-- I have trouble believing that the packet structure is treated as flat as this
+define matches(m:Match, pkt: Context): bool =
+  if (rep m).protocol == Protocol_internal then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_ethernet then
+    return matches((rep m).field_matches ,(rep((rep pkt).packet)).eth_dat)
+  if (rep m).protocol == Protocol_vlan then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_mpls then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_arp then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_ipv4 then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_icmpv4 then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_ipv6 then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_icmpv6 then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_tcp then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_sctp then
+    return false    -- Unimplemented!
+  if (rep m).protocol == Protocol_udp then
+    return false    -- Unimplemented!
+  else
+    return false    -- Need enumerations in order to avoid having this check.
+
+-- Try to match against a flow
+define matches(flow: Flow, pkt: Context): Maybe InstructionSet =
+  define a: Array Match = (rep flow).match_set
+  define n: int = size[|Match|](a)
+  define i: int = 0
+  while i != n repeat
+    if not matches(get(a, i), pkt) then
+      return none
+    i := i + 1
+  return some((rep flow).instruction_set)
+
+
+
+--------------------
+--| The Pipeline |--
+--------------------
+-- The pipeline is a collection of algorithms that form the pipline abstraction.
+-- At a high level, the pipeline defines a binary relation over triple:
+--    (DataPlane, ControlPlane, Stream(Packet))
+-- A path through that relation is the change in state as a trace is pushed
+-- through a data plane and control plane pair.
+-- The `process` algorithm is a step function through this relation. It pushes
+-- A packet through the dataplane and, if need be, the control plane.
+
+define get_instruction_set(p:ref Pipeline, tbl: Table): InstructionSet =
+  define ctx: Context = get_context(p)
+  define n: int = size[|Flow|]((rep tbl).entries)
+  define i: int = 0
+  while i != n repeat
+    define flow: Flow = get((rep tbl).entries, i)
+    match matches(flow, ctx) with
+      case none        => i := i + 1
+      case some(insts) => return insts
+  return (rep tbl).miss_inst
+
+define exec_meter_inst(p: ref Pipeline, insts: InstructionSet): void =
+  FIXME_no_op
+
+-- FIXME: Need to implement ports
+define output_context(p: ref Pipeline, dest: OutDest): void =
+  match dest with
+    case to_all     => FIXME_no_op
+    case to_port(n) => FIXME_no_op
+    case to_ctrl(n) => push_context_to_control(p,n)
+
+define exec_insts(p: ref Pipeline, apps: Array Instruction): void =
+  define n: int = size apps
+  define i: int = 0
+  while i != n repeat
+    match get(apps, i) with
+      case Output(dest) => output_context(p, dest)
+    i := i + 1
+
+define exec_apply_inst(p: ref Pipeline, insts: InstructionSet): void =
+  match (rep insts).apply with
+    case none    => FIXME_no_op
+    case some(x) => exec_insts(p, rep x)
+
+define exec_clear_inst(p: ref Pipeline, insts: InstructionSet): void =
+  if rep ((rep insts).clear) then
+    clear_write_instructions(p)
+
+define queue_write_inst(p: ref Pipeline, insts: InstructionSet): void =
+  match (rep insts).write with
+    case none => FIXME_no_op
+    case some(apps) =>
+      define inst: Array Instruction = rep apps
+      queue_write_instructions(p, inst)
+
+define exec_metadata(p: ref Pipeline, insts: InstructionSet): void =
+  FIXME_no_op
+
+-- Execution stage
+define exec_instructions(p: ref Pipeline, insts: InstructionSet): Maybe int =
+  exec_meter_inst(p, insts)
+  exec_apply_inst(p, insts)
+  exec_clear_inst(p, insts)
+  queue_write_inst(p, insts)
+  exec_metadata(p, insts)
+  match (rep insts).goto with
+    case none    => none
+    case some(x) => some(rep x)
+
+
+-- The choice-selection-execution loop
+define process_tables(p: ref Pipeline, i: int): Maybe int =
+  define tbl: Table = get_table(p, i)                           -- Choose
+  define insts: InstructionSet = get_instruction_set(p, tbl)    -- Select
+  return exec_instructions(p, insts)                            -- Execute
+
+
+define get_table_index(m: Maybe int): int =
+  match m with
+    case none    => 0
+    case some(n) => n
+
+define apply_group_actions(Pipeline): void = FIXME_no_op
+
+define exec_write_instruction(p: ref Pipeline): void =
+  exec_insts(p, (rep p).write_insts)
+  clear_write_instructions(p)
+
+-- Starts the process.
+-- FIXME: Should just take a BLOB. This is called on arrival.
+define forall(n:int), process(dp: DataPlane(n), ctx: Context): OutBuffer =
+  define pipeline: Pipeline = init_pipeline(dp, ctx)
+  define tbl_index: Maybe int = some 0
+  while is_some tbl_index repeat
+    tbl_index := process_tables(pipeline, get_table_index(tbl_index))
+  apply_group_actions(pipeline)
+  exec_write_instruction(pipeline)  -- egress
+  return (rep pipeline).out
+
+
+
+--------------------------------
+--| Control plane processing |--
+--------------------------------
+
+-- This needs to be parametric? Is this a postulate?
+define ControlPlane(n): type = (ref DataPlane, PacketIn) -> Array Context
+
+define forall(n:int), process_control(cp: ControlPlane(n), dp: ref DataPlane(n), pkts: Array PacketIn): Array Context =
+  define n: int = size pkts
+  define i: int = 0
+  define out: Array Context = mk_array 0
+  while i != n repeat
+    out := concat(out, (rep cp)(dp, get(pkts, i)))
+    i := i + 1
+  return out
+
+
+
+-- Run the packet through the data plane
+define forall(n:int), process(dp: ref DataPlane(n), cp: ref ControlPlane(n), pkt: TracePacket): Array Context =
+  define out: OutBuffer = process(dp, trace_pkt_to_context pkt)
+  -- Process all messages to the controller
+  -- FIXME: Incorrect. Packets out from the Array Context should go back to
+  -- The data plane for processing.
+  define ctrl_out: Array Context = process_control(cp, dp, (rep out).ctrl)
+  return concat(ctrl_out, (rep out).ports)

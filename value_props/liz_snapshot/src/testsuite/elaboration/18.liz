@@ -1,0 +1,3 @@
+// Ticket #18.
+// Contributed by Jordan Donais.
+define foo: (i: int) -> b: int = i;

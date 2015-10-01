@@ -1,0 +1,29 @@
+define Ethernet : namespace = {
+
+rule MAC : typename = array( uint(8), 6 ) ;
+
+define Broadcast( addr : MAC ) : bool = {
+   return ( addr[0] == 16rff
+          and addr[1] == 16rff
+          and addr[2] == 16rff
+          and addr[3] == 16rff
+          and addr[4] == 16rff
+          and addr[5] == 16rff ) ;
+}
+
+define notBroadcast( addr : MAC ) : bool = {
+   return not Broadcast( addr ) ;
+}
+
+define Header : struct = {
+   declare dst     : MAC ;
+   declare src     : MAC | notBroadcast ;
+   declare typelen : bits(16) ;
+}
+
+define Packet : struct = {
+   declare header  : Header ;
+   declare payload : list( bits(8) ) ;
+}
+
+}

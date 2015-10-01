@@ -1,0 +1,8 @@
+// Ticket #5, reported by Jasson Casey.
+// Options: --compile
+
+define IPv4 : namespace = {
+  define Hdr : struct = {
+     declare x : int;
+  }
+}

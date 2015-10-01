@@ -1,0 +1,14 @@
+-- Test case for issue #60
+
+
+++ Function parameter case
+define f(a: int): int =
+  define badness(): int = a + 2
+  return badness()
+
+
+++ Locally defined variable case
+define g(): int =
+  define a: int = 0
+  define badness(): int = a + 2
+  return badness()

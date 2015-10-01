@@ -1,0 +1,29 @@
+define Point : type = record { 
+  x:int := 0, 
+  y:int := 0
+}; 
+
+define get_y(p:Point):int = (rep p).y;
+define get_x(p:Point):int = (rep p).x;
+
+define { xx:int, yy:int } : Point = {
+  xx, yy
+};
+
+define print_point(point:Point) : void = {
+  print ((rep point).x);
+  print "\n";
+  print ((rep point).y);
+};
+
+define main():int = {
+  define new_point:Point = per [ 5, 4 ];
+
+  print_point(new_point);
+  print '\n';
+  print get_x(new_point);
+  print '\n';
+  print get_y(new_point);
+  
+  return 0;
+};

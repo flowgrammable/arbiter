@@ -1,0 +1,14 @@
+define fibonacci(val:int, f_num:int, s_num:int):int =
+ if s_num < f_num then 
+  return -1
+ if val == -1 then 
+  return s_num
+ else
+  return fibonacci(val-1,s_num,f_num+s_num)
+
+define fibonacci(val:int):int = 
+  if val == 0 then 
+   return 0
+  if val == 1 then 
+   return 1
+  return fibonacci(val-2,0,1)

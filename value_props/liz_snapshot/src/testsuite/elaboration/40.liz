@@ -1,0 +1,6 @@
+-- Test for ticket #40.
+-- Type functions, built-in or not, in the context of a type
+-- should be simplified before checking for type eqaulity.
+
+define a:int = 0
+define r:ref int = a

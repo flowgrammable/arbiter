@@ -1,0 +1,13 @@
+-- Example for Ticket 50.
+
+define breakfast: namespace =
+
+  -- A simple, wholesome breakfast.
+  define eggs: string = "hmm"
+
+  ++ A crispy, salty snack.
+  define bacon():int =
+    define a:int = 0
+    return a
+
+define whoa:int = 12345678

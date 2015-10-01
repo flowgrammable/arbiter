@@ -1,0 +1,3 @@
+define f(): int =
+  -- comment
+  return 0

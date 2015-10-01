@@ -1,0 +1,8 @@
+-- Ticket #54: Variants are not emitting constructor declarations.
+
+define Breakfast: type = variant
+  bagel: Breakfast
+  eggs: Breakfast
+  toast: Breakfast
+
+define x: Breakfast = eggs

@@ -1,0 +1,3 @@
+-- Test case for Ticket #56.
+
+define k():void = return

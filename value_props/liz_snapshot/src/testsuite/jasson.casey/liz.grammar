@@ -1,0 +1,177 @@
+GRAMMAR NOTES
+-------------
+1. All caps indicate a domain of a literal
+2. All elements of prudction are terminals or nonterminals except |
+3. If | is needed as a non-terminal it must be escaped with squotes exp. '|'
+4. Specific literals (keywords) must be escaped with squotes exp. 'true'
+5. A production can use regex to indicate a class of literals
+
+---------------------- parser entry point ------------------------------------
+module      ::= top_level | top_level module
+top_level   ::= import | statement
+
+import      ::= 'import' path ;
+path        ::= STRING | path_item | path_item . path
+path_item   ::= basic_type | identifier
+
+statement   ::= control_statement | declaration | definition | assumption | rule
+            | postulate | simple_statement_or_assignment | compound
+
+-------------------------------- statements -----------------------------------
+
+definition        ::= 'define' definiendum : nontag_type = initializer
+declaration       ::= 'declare' signature
+assumption        ::= 'assume' implication ;
+rule              ::= 'rule' definiendum : nontag_type = expression ;
+postulate         ::= 'postulate' definiendum : nontag_type ;
+control_statement ::= exit ; | conditional | switch | loop
+compound          ::= { } | { statements }
+statements        ::= statement statements | statement
+
+simple_statement_or_assignment   ::= ; | quantified expr_stmt_or_assignment_tail
+expr_stmt_or_assignment_tail     ::= ; | := expression ; | 'where' locals
+locals                           ::= local_decl | {} | { local_decls }
+local_decls                      ::= local_decl | local_decl local_decls
+local_decl                       ::= definiendum : nontag_type ;
+                                 | = simple_statement_or_assignment ; 
+
+loop           ::= iterators 'repeat' statement | 'repeat' statement
+iterators      ::= iterator | iterator iterators
+iterator       ::= 'until' condition | 'while' condition | '|' condition 
+               | for_iterator
+for_iterator   ::= 'for' identifier 'in' interval
+
+conditional ::= 'if' condition 'then' statement
+            | 'if' condition 'then' statement 'else' statement
+
+switch         ::= 'switch' scrutinee { case_list }
+               | 'switch' scrutinee { }
+scrutinee      ::= ( expression )
+case_list      ::= case | case case_list
+case           ::= 'case' case_pattern => statement
+case_pattern   ::= identifier : type | type
+
+initializer ::= brace | specification | simple_statement_or_assignment
+
+specification ::= spec_ops signature_block ;
+spec_ops ::= 'inductive' | 'coinductive'
+
+-------------------------------- expressions ----------------------------------
+
+expression  ::= implication | implication 'or' exit
+exit        ::= 'return' interval | 'leave' interval | 'throw' interval
+implication ::= implication => interval | implication => interval restriction
+
+interval       ::= disjunction | disjunction .. | disjunction .. disjunction
+disjunction    ::= conjunction or_ops disjunction
+conjunction    ::= equality and_ops conjunction
+equality       ::= equality equality_ops relational
+relational     ::= relational relational_ops additive
+additive       ::= additive additive_ops multiplicative
+multiplicative ::= multiplicative mult_ops prefix
+prefix         ::= prefix_ops qualified | qualified | qualified &
+qualified      ::= 'const' juxtaposition | juxtaposition
+juxaposition   ::= exponentiation | exponentiation juxaposition
+exponentiation ::= suffix ^ exponentiation
+suffix         ::= postfix | suffix !
+postfix        ::= data_type | postfix_head sel_or_enc 
+               | postfix_head sel_or_enc @ nontag_type
+
+or_ops               ::= 'or' | \/
+and_ops              ::= 'and' | /\
+equality_ops         ::= == | !=
+relational_ops       ::= < | <= | > | >=
+additive_ops         ::= + | -
+mulitplicative_ops   ::= * | / | 'div' | 'quo' | % | 'rem'
+prefix_ops           ::= - | 'not' | ~ | #
+
+postfix_head   ::= assertion | primary
+sel_or_enc     ::= selector | enclosure 
+               | selector sel_or_enc | enclosure sel_or_enc
+
+selector    ::= . elementary
+data_type   ::= data_ops signature_block
+assertion   ::= 'assert' ( implication , implication )
+primary     ::= elementary | parenthesis | brace | enclosed
+enclosure   ::= ( enclosed ) | [ enclosed ] | { enclosed } | '[|' enclosed '|]'
+
+elementary  ::= literal | basic_type | name
+parenthesis ::= ( binary_operator ) | ( binary_operator right_section_operand ) 
+            | ( ) | ( enclosed )
+
+brace       ::= { quantified iterators } | { quantified , quantified_list } 
+            | { , quantified_list } | { quantified } | { } 
+            | { quantified expr_stmt_or_assignment_tail statements }
+            | { expr_stmt_or_assignment_tail statements }
+
+enclosed          ::= quantified iterators | quantified_list
+quantified_list   ::= quantified | quantified , quantified_list
+quantified        ::= quantifier ( named_parameter_list ) quantified
+                  | implication
+
+data_ops          ::= 'record' | 'variant'
+signature_block   ::= { } | { signature_list }
+signature_list    ::= signature | signature , signature_list
+signature         ::= definiendum : nontag_type 
+                  | definiendum : nontag_type := implication
+
+definiendum ::= INTEGER | 'is' | identifier | identifier parameter_list
+            | { } | { parameter_list } | [ ] | [ parameter_list ]
+
+type              ::= tag_type | nontag_type
+tag_type          ::= identifier : named_parameter
+nontag_type       ::= quantified_type | arrow_type | implication
+quantified_type   ::= quantifier ( named_parameter_list )
+arrow_type        ::= parameter_list -> type
+
+instantiation  ::= postfix | postfix restriction
+restriction    ::= '|' condition
+condition      ::= disjunction
+
+quantifier     ::= 'forall' | 'exists'
+
+parameter_list ::= ( ) | ( parameters )
+parameters     ::= parameter | parameter , parameters
+parameter      ::= tag_type | nontag_type
+
+named_parameter_list ::= named_parameter 
+                     | named_parameter , named_parameter_list
+named_parameter      := identifier : instantiation
+
+selector ::= . elementary
+
+binary_operator ::= or | and | == | != | < | <= | > | >= | + | - | * | / | % | ^
+
+right_section_operand ::= - prefix_operand | right_operand
+right_operand  ::= or conjunction | and equality 
+               | == relational | != relational
+               | < additive | <= additive | > additive | >= additive
+               | + multiplicative | - mulitplicative
+               | * prefix | / prefix | % prefix
+               | ^ exponentiation
+
+-------------------- names: named operators and identifiers ----------------
+
+name ::= opnm | identifier
+
+opnm ::= suffix_opnm | exp_opnm | prefix_opnm | mult_opnm | additive_opnm
+         | relative_opnm | equality_opnm | logical_opnm | interval_opnm
+
+suffix_opnm    ::= ( ! ) 
+exp_opnm       ::= ( ^ )
+prefix_opnm    ::= ( - ) | ( not ) | ( ~ ) | ( # )
+mult_opnm      ::= ( * ) | ( / ) | ( div ) | ( quo ) | ( % ) | ( rem )
+additive_opnm  ::= ( + ) | ( - )
+relative_opnm  ::= ( < ) | ( <= ) | ( > ) | ( >= )
+equality_opnm  ::= ( == ) | ( != )
+logical_opnm   ::= ( and ) | ( or ) | ( => )
+interval_opnm  ::= ( . )
+
+------------------- simple terminals ----------------------------------------
+
+basic_type  ::= 'bool' | 'byte' | 'char' | 'int' | 'double' | 'string' | 'type'
+            | 'prop' | 'axiom' | 'concept' | 'namespace'
+
+literal     ::= INTEGER | DOUBLE | CHAR | STRING | bool
+bool        ::= 'true' | 'false'
+identifer   ::= [a-zA-Z_][a-zA-Z_0-9]*

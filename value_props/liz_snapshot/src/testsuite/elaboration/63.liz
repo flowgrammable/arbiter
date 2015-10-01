@@ -1,0 +1,5 @@
+-- Type functions that yield generative types ought to synthesize quantified
+-- `per` and `rep` functions.
+
+define tag(t:type): type = t
+define forall(t:type). untag(x: tag t): t = rep x

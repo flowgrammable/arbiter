@@ -1,0 +1,4 @@
+// Ticket #19.
+// Contributed by Jordan Donais.
+
+define foo(i:int):forall (i) | i>0 = i;

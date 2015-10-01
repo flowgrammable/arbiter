@@ -1,0 +1,7 @@
+define bFun(v:int):bool = v > 5
+
+define noLessThan5(val:int):bool =
+ assert (val@int, bFun)
+ return true
+
+noLessThan5(6)

@@ -1,0 +1,1 @@
+define toast(f:(int)->int):int = f 0

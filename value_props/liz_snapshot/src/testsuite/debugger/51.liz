@@ -1,0 +1,3 @@
+-- Test case for ticket 51.
+
+define id(X:Regular):Regular = X

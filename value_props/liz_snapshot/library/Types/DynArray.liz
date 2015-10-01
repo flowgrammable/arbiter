@@ -1,0 +1,146 @@
+-- Copyright (C) 2013, Texas A&M University
+-- Copyright (C) 2014-2015, Gabriel Dos Reis.
+-- All rights reserved.
+-- Written by Michael Lopez.
+--
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are
+-- met:
+--
+--     - Redistributions of source code must retain the above copyright
+--       notice, this list of conditions and the following disclaimer.
+--
+--     - Redistributions in binary form must reproduce the above copyright
+--       notice, this list of conditions and the following disclaimer in
+--       the documentation and/or other materials provided with the
+--       distribution.
+--
+--     - Neither the name of Liz, nor the names of its contributors may
+--       be used to endorse or promote products derived from this software
+--       without specific prior written permission.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+-- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+-- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+-- PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
+-- OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import "Liz/Types/array.liz"
+
+
+
+prolong Liz: namespace =
+
+  --| A vector is a size-array pair.
+  define DynArray(A: type): type = record
+    cap:  int        -- Number of elements the vector can take.
+    size: int        -- Number of elements in the vector.
+    data: Array A    -- Elements of the array
+
+
+  --| Initialize a vector.
+  define forall(A: type), mk_DynArray (): DynArray A =
+    per[|A|] [ 1, 0, mk_array[|A|] 1 ]
+
+
+  --| Initialize a vector with a single element.
+  define forall(A: type), singleton (a: A): DynArray A =
+    define data: Array A = mk_array 1
+    at(data, 0) := a
+    return per[|A|] [ 1, 1, data ]
+
+
+  --| True iff the dynamic array has no elements.
+  define forall(A: type), is_empty(as: DynArray A): bool =
+    rep[|A|](as).size == 0
+
+
+  --| Retrieve the size of a dynamic array `a`.
+  define forall(A: type), size(a: DynArray A): int =
+    rep[|A|](a).size
+
+
+  -- | Retrieve the capacity of a dynamic array.
+  define forall(A: type), capacity(v: DynArray A): int =
+    rep[|A|](v).cap
+
+
+  --| Retrieve the `n`th element of `as`. Not safe.
+  define forall(A: type), at(as: DynArray A, n: int): ref A =
+    at(rep[|A|](as).data, n)
+
+
+  --| Double the capacity of a dynamic array.
+  define forall(A: type), double_capacity(as: ref DynArray A): void =
+    define cap: int = 2 * rep[|A|](as).cap
+    define siz: int = rep[|A|](as).size
+    define data: Array A = rep[|A|](as).data
+    define new_data: Array A = mk_array cap
+    copy_to(data, 0, siz, new_data, 0)
+    as := per[|A|] [ cap, siz, new_data ]
+
+
+  --| Push an element on to the back of the vector.
+  define forall(A: type), push_back(as: ref DynArray A, a: A): void =
+    if (size as == capacity as) then
+      double_capacity as
+    define cap: int = rep[|A|](as).cap
+    define siz: int = rep[|A|](as).size
+    define data: Array A = rep[|A|](as).data
+    at(data, siz) := a
+    as := per[|A|][ cap, siz + 1, data ]
+
+
+  --| Insert an element `a` into position `n` in `as`.
+  define forall(A: type), insert(as: ref DynArray A, n: int, a: A): void =
+    define from: Array A = rep[|A|](as).data
+    define to: Array A = rep[|A|](as).data
+    define cap: int = rep[|A|](as).cap
+    define siz: int = rep[|A|](as).size
+    if cap == siz then
+      cap := 2 * cap
+      to := mk_array cap
+    copy_to(from, 0, n, to, 0)
+    copy_to(from, n+1, siz, to, siz+1)
+    at(to,n) := a
+    as := per[|A|] [ cap, siz + 1, to ]
+
+  
+  --| Erase the `n`th element.
+  define forall(A: type), erase(v: ref DynArray A, n: int): void =
+    define cap: int = rep[|A|](v).cap
+    define siz: int = rep[|A|](v).size
+    define data: Array A = rep[|A|](v).data
+    copy_to(data, n+1, siz, data, n)
+    v := per[|A|] [ cap, siz - 1, data ]
+
+
+  --| DynArray iterator
+  define DynArrayRange(A: type): type = record
+    data:     Array A
+    current:  int
+    terminal: int
+
+  define forall(A: type), mk_iterator(d: DynArray A): DynArrayRange A =
+    per[|A|] [ data, 0, size d ] where data: Array A = (rep d).data
+
+  define forall(A: type), next(a: ref DynArrayRange A): void =
+    a := per[|A|] [ data, current + 1, terminal ] where
+      data: Array A = (rep a).data
+      current: int  = (rep a).current
+      terminal: int = (rep a).terminal
+
+
+  define forall(A: type), read(a: DynArrayRange A): A =
+    at(data, current) where
+      data: Array A = (rep a).data
+      current: int  = (rep a).current
+
+  define forall(A: type), is_end(a: DynArrayRange A): bool =
+    (rep a).current == (rep a).terminal

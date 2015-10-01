@@ -1,0 +1,8 @@
+-- Test case for Ticket #55.
+
+define print_number(n: int): void = match n with
+  case 1 => print "one"
+  case 2 => print "two"
+  case 3 => print "three"
+
+print_number 2

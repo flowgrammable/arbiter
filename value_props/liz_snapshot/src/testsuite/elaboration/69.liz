@@ -1,0 +1,12 @@
+-- This is a test for ticket #69.
+-- Support for existential quantification.
+
+define exists (t:type). id_ex(x:t):t = x
+define id_int: (int) -> int = id_ex[|int|]
+id_int(3)
+id_ex[|char|]
+
+-- Explicit instantiations of universals is also allowed.
+define forall (t:type). id_for(x:t):t = x
+define id_double: (double) -> double = id_for[|double|]
+id_double 2.0
