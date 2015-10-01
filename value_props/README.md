@@ -64,3 +64,11 @@ That's it. For more information on Liz, see the `README.md` inside of the liz sn
 ## Time Complexity of Overload Resolution
 
 We provide a worst-case time complexity analysis of the overload resolution algorithm. The time complexity is contained in `./time_complexity_report`. Build it with `make`.
+
+
+
+## Update policy
+
+While the language syntax and feature set will remain frozen, this snapshot will be updated when bugs are discovered and as more compiler intrinsics are transformed into libraries. New tests and features (excluding changes in syntax and semantics), will be added as work continues on Arbiter.
+
+Please submit comments, complaints, and bugs to mlopez -at- cse.tamu.edu. I'll push bug fixes into the snapshot as soon as I can. Cheers.
