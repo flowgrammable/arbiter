@@ -1,0 +1,72 @@
+\documentclass{scrartcl}%, twocolumn}
+
+
+
+% --- Packages ---
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{array}
+\usepackage{thmtools}
+  \declaretheorem[
+    name=Theorem,
+    refname={theorem,theorems},
+    Refname={Theorem,Theorems},
+  ]{theorem}
+\usepackage[noabbrev]{cleveref}
+\usepackage{listingsutf8}
+  \lstset{
+    basicstyle=\ttfamily \small,
+    showstringspaces=false,
+    numbers=none,%left,
+    captionpos=b,
+    columns=flexible,
+    xleftmargin=0.4cm,
+    commentstyle=\itshape \rmfamily
+    % morecomment=[l]{--}
+  }
+  \lstdefinestyle{algo}{
+    basicstyle=\small,
+    showstringspaces=false,
+    numbers=none,%left,
+    captionpos=b,
+    columns=flexible,
+    xleftmargin=0.5cm,
+    morekeywords={def,if,then,else,while,do,assert,end,break,let}
+  }
+  \lstdefinestyle{numberedalgo}{
+    basicstyle=\small,
+    showstringspaces=false,
+    numbers=left,
+    captionpos=b,
+    columns=flexible,
+    xleftmargin=0.5cm,
+    morekeywords={for,def,if,then,else,while,do,assert,end,break,let}
+  }
+  \lstdefinestyle{numbered}{
+    language=C,
+    basicstyle=\ttfamily \small,
+    showstringspaces=false,
+    numbers=left,
+    numberstyle=\scriptsize \ttfamily,
+    numbersep=1.2ex,
+    captionpos=b,
+    columns=flexible,
+    xleftmargin=0.4ex,
+    commentstyle=\itshape,
+    morecomment=[l]{--}
+  }
+
+
+
+\begin{document}
+
+  % --- metadata ---
+  \title{Time complexity of overload resolution}
+  \subtitle{for the \textit{Safer Flow Tables Through Value Properties} paper (submitted to SAC 2016)}
+  \date{21 September, 2016}
+  \maketitle
+
+  % \input{intro.tex}
+  \input{intrinsics.tex}
+  \input{algorithms.tex}
+
+\end{document}

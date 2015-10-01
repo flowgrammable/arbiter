@@ -1,0 +1,119 @@
+\section{Intrinsics}
+\label{sec:intrinsics}
+
+
+
+\subsection{Data types}
+\label{subsec:data_types}
+
+Overload resolution operates over five classes of data:
+  \begin{itemize}
+    \item
+      sequences $\overrightarrow{x}$ -- A finite sequence of values.
+    \item
+      contexts $ctx$ -- A sequence of variable definitions, function definitions, and assumptions.
+    \item
+      functions $f$ -- Has an arity, argument and result types, and a constraint.
+    \item
+      expressions $arg, P, Q$ -- Tree representation of terms and types.
+    \item
+      integers $i$ -- Integers.
+  \end{itemize}
+
+
+
+\subsection{Simple operation}
+\label{subsec:intrinsics.operations}
+
+Overload resolution relies on several operators and functions. Trival operations, listed below, are considered to cost one time credit.
+  \begin{center}
+  \begin{tabular}{|c|m{7cm}|}
+    \hline
+      Operation                                  & Description \\
+    \hline
+      $x_1 = x_2$ or $x_1 \neq x_2$      & Value equality or inequality \\
+    \hline
+      for $x \in \overrightarrow{x}$ do $\ldots$ & Single iteration step \\
+    \hline
+      $f(a_1, \ldots, a_n)$                      & Function call \\
+    \hline
+      return $x$                                 & Value return \\
+    \hline
+      if $x$ then $\ldots$ else $\ldots$         & Branch selection \\
+    \hline
+      $|\overrightarrow{x}|$                     & Sequence of length \\
+    \hline
+      $\overrightarrow{x}_i$                     & Element selection \\
+    \hline
+      not $b$                                    & Negation of Boolean value \\
+    \hline
+      $props(ctx)$                            & Get the assumptions in $ctx$\\
+    \hline
+      raise ``text''                          & Raise an error \\
+    \hline
+  \end{tabular}
+  \end{center}
+
+Functions contain several pieces of information and are extracted with the following accessor functions for a single time credit.
+  \begin{center}
+    \begin{tabular}{|c|c|l|}
+      \hline
+        Operation       & Type          & Description \\
+      \hline
+        $arity(f)$      & integer       & Number of arguments $f$ accepts \\
+      \hline
+        $argTypes(f)$   & type sequence & Types of functions arguments \\
+      \hline
+        $resultType(f)$ & type          & Result type of $f$ \\
+      \hline
+        $constraint(f)$ & term          & Constraint on arguments of $f$ \\
+      \hline
+    \end{tabular}
+  \end{center}
+
+
+
+\subsection{Complex intrinsics}
+\label{subsec:intrinsics.complex}
+
+The algorithms rely on a collection of simple operations with non-trivial time complexities.
+
+\paragraph{Structural equivalence.}  Our algorithms often use structural equivalence $e_1 \sim e_2$ which is assumed to have a worst case time complexity of less than $4n$ where $n$ is the maximum number of nodes of either $e_1$ or $e_2$. This is because, in the worst case, $e_1$ and $e_2$ are equivalent and there for each node is visited. However each node is visited twice since it is compared to a node in the other expression and is accessed recursively.
+
+\paragraph{Sequence functions.}  There are a collection of sequence operators used by overload resolution.
+  \begin{center}
+    \begin{tabular}{|c|c|m{8cm}|}
+      \hline
+        Operation & Worst-case & Description \\
+      \hline
+        $\mbox{lookup}(ctx, name)$
+          & $2 |ctx|$
+          & Collect functions with the name $name$ \\
+      \hline
+        $\mbox{map}(\overrightarrow{x}, func)$
+          & $|\overrightarrow{x}| n$
+          & Transform each element of a sequence; $n$ is the worst case
+            running-time of $func$ \\
+      \hline
+        $\mbox{filter}_{\mbox{not}}(\overrightarrow{x}, y)$
+          & $2 |\overrightarrow{x}|$
+          & Construct a sequence from $\overrightarrow{x}$ without elements that
+            are equal to $y$ \\
+      \hline
+        $\mbox{min}(\overrightarrow{x}, \leq)$
+          & $4 n |\overrightarrow{x}|^2$
+          & Constructs a sequence of minimal elements from the preorder $\leq$;
+            $n$ is the worst-case running time of $\leq$. \\
+      \hline
+    \end{tabular}
+  \end{center}
+The min function works by constructing a dependency graph for the elements $\overrightarrow{x}$ and selecting the elements with no in edges.
+
+\paragraph{Substitution.}  Substitution $\mbox{substitute}(\overrightarrow{x},\overrightarrow{y}, e)$ substitutes each instance of $x$ with $y$ in $e$ where $|\overrightarrow{x}| = |\overrightarrow{y}|$. This operation is assumed to take potentially $5 |\overrightarrow{y}| n$ where $n$ is the number of nodes in the expression $e$.
+
+
+
+% \subsection{Constants}
+% \label{subsec:intrinsics.constants}
+
+% To simplify the discussion of time complexity, we use the following constants

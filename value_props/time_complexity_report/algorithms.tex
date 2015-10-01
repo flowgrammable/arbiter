@@ -1,0 +1,154 @@
+\section{Overload Resolution}
+\label{sec:algos}
+
+The overload resolution algorithm \textsc{Resolve} is a simple algorithm that creates a set of potential functions, called candidates, and prunes it. If the result is a single function, then overload resolution is a success. Otherwise an error is raised. The pruning functions rely on two core algorithms: \textsc{Candidate}, which determines if a function's input types are satisfied by the arguments it is given, and \textsc{Satisfies}, which determines if a function's constraint is satisfied.
+
+To simplify discussion of the worst case time complexities, we fix the following constants.
+  \begin{itemize}
+    \item
+      $N_{ctx}$ -- Number of definitions in the context.
+    \item
+      $N_{props}$ -- Number of propositions in the context.
+    \item
+      $A$ -- Maximum arity of a function in the context.
+    \item
+      $C$ -- Maximum number of overloads for any name.
+    \item
+      $S$ -- Maximum number of nodes in a type of constraint.
+    \item
+      $k$ -- Number of top-level conjunction operators in an expression.
+  \end{itemize}
+
+\subsection{\textsc{Satisfies}}
+\label{subsec:algos.satisfies}
+
+The \textsc{Satisfies} algorithm implements a sequent calculus solver for conjunction. It accepts a sequence of hypotheses $\overrightarrow{P}$ and a goal $Q$ and outputs true if and only if $\overrightarrow{P}$ entails $Q$.
+
+ \begin{center}
+    \begin{lstlisting}[style=numberedalgo, mathescape]
+$\mbox{\textsc{Satisfies}}(\overrightarrow{P}, Q)$ =
+  if $Q = \mathtt{true}$ then
+    return true
+  else if $Q = Q_1 \wedge Q_2$ then
+    return $\mbox{\textsc{Satisfies}}(\overrightarrow{P}, Q_1)$ and $\mbox{\textsc{Satisfies}}(\overrightarrow{P}, Q_2)$
+  else
+    for $P \in \overrightarrow{P}$ do
+      if $P \sim Q$ then
+        return true
+    return false
+    \end{lstlisting}
+ \end{center}
+
+Of all of the algorithms, \textsc{Satisfies} has the trickiest worst case time complexity.
+
+\begin{theorem}[Worst case time complexity for \textsc{Satisfies}]
+  \label{thm:satsfies_time_complexity}
+  For an expression $Q$, the number of time credits needed to execute \textsc{Satisfies} is upper bounded by $8(2k+1) + (k+1)|P|S$.
+\end{theorem}
+  \begin{proof}
+    Let $f$ be the number of time credits needed by \textsc{Satisfies} to execute for an expression $Q$. Since we assume the worst case, $Q \neq true$. The comparison and the branch take a time credit each. Then 2 more are spent deciding whether $Q$ is a conjunction. This choice can be modeled by piece-wise as the following.
+    $$
+      f(Q) =
+        \begin{cases}
+          4 + 4 + f(Q_1) + f(Q_2)            & \text{if $Q = Q_1 \wedge Q_2$} \\
+          4+3 |\overrightarrow{P}|\cdot 4S   & \text{otherwise} \\
+        \end{cases}
+    $$
+    The first case, when $Q$ is a conjunction recurses on each subexpression. The second case is an over approximation of the number of time credits needed. The type comparison is run once for every hypothesis in $\overrightarrow{P}$. At the worst case, the type comparison will take $4S$. Note that for $Q$, the function $f$ is less than the function $g$ defined as such.
+    $$
+      g(Q) =
+        \begin{cases}
+          8 + g(Q_1) + g(Q_2)           & \text{if $Q = Q_1 \wedge Q_2$} \\
+          8 + 12 |\overrightarrow{P}| S & \text{otherwise} \\
+        \end{cases}
+    $$
+
+    Using weak induction, it can be shown that $g(Q) = 8(2k+1) + (k+1)|P|S$ where $k$ is the number of top-level conjunctions in $Q$. For the case where $k=0$, this is trivial. For the inductive step, suppose the equality holds for every $k < t$ for some positive integer $t$. Since $t > 0$, $Q$ must be a conjunction $Q_1 \wedge Q_2$. Then $Q_1$ has $r$ top level conjunctions and $Q_2$ has $s$ top level conjunctions where $t = r + s + 1$.
+
+    Observe.
+      \begin{align*}
+        g(Q) &= 8 + g(Q_1) + g(Q_2) & ~~\mbox{def. of $g$} \\
+             &= 8 + (8(2r+1) + (r+1)|P|S) + (8(2s+1) + (s+1)|P|S)
+                & ~~\mbox{ind. hyp.} \\
+             &= 8 + 16r+8 + 16s+8 + (r+1)|P|S + (s+1)|P|S \\
+             &= 8 + 16 (r + s + 1) + (r + s + 2)|P|S \\
+             &= 8 + 16 t + (t + 1)|P|S \\
+             &= 8(2t + 1) + (t + 1)|P|S \\
+      \end{align*}
+  \end{proof}
+
+\subsection{\textsc{Candidate}}
+
+The candidate algorithm attempts to construct a function application from a function $f$ and arguments $\overrightarrow{arg}$. If there are any errors, the value $\varnothing$ is returned. If there are no errors, a pair of the function application and the constraint.
+  \begin{center}
+    \begin{lstlisting}[style=numberedalgo, mathescape]
+$\mbox{\textsc{Candidate}}(ctx, f, \overrightarrow{arg})$ =
+  if $arity(f) \neq |\overrightarrow{arg}|$ then
+    return $\varnothing$
+  for $i \in 1..|\overrightarrow{arg}|$ do
+    if not$(type(\overrightarrow{arg}_i) \sim argTypes(f)_i)$ then
+      return $\varnothing$
+  cst := $\mbox{substitute}(\overrightarrow{arg}, params(f), constraint(f))$
+  if not $\mbox{\textsc{Satisfies}}(props(ctx), cst)$ then
+    return $\varnothing$
+  return $(apply(f,\overrightarrow{arg}), cst)$
+    \end{lstlisting}
+  \end{center}
+
+\begin{theorem}[Worst case time complexity for \textsc{Candidate}]
+  \label{thm:candidate_time_complexity}
+  For a context $ctx$, a function $f$, and arguments $\overrightarrow{arg}$, the number of time credits needed to execute \textsc{Candidate} is upper bounded by $14 + 11A + 4AS + 8(2k+1) + (k+1)N_{props}S$.
+\end{theorem}
+  \begin{proof}
+    Lines 2 and 10 cost a total of 6 time credits. Line 4 is a loop over the arity of the function that checks the types of each argument. The size of each type is upper bounded by $S$. The loop costs $A(6 + 4S)$ time credits where 6 accounts for the intrinsic operations for each loop iteration. Line 7 substitutes the arguments into the function constraint. This costs less than $4 + 5 A S$ time credits.
+
+    Line 8 attempts to satisfy the function constraint given the assumptions in the context $ctx$. Factoring in constant operations, this costs $4 + 8(2k+1) + (k+1)N_{props}S$ time credits. In total, the algorithm costs
+    $$
+      14 + 11A + 4AS + 8(2k+1) + (k+1)N_{props}S 
+    $$
+    time credits.
+  \end{proof}
+
+\subsection{\textsc{Resolve}}
+\label{subsec:algos.resolve}
+
+The overload resolution \textsc{Resolve} takes a context $ctx$, a string $name$, and a sequence of arguments $\overrightarrow{arg}$.
+
+  \begin{center}
+    \begin{lstlisting}[style=numberedalgo, mathescape]
+$\mbox{\textsc{Resolve}}(ctx, name, \overrightarrow{arg})$ =
+  $\overrightarrow{f}$ := $\mbox{lookup}(ctx, name)$
+  $\overrightarrow{cand}$ := $map(\overrightarrow{f}, \mbox{\textsc{Candidate}}(ctx, \mathrm{\_}, \overrightarrow{arg}))$
+  $\overrightarrow{cand}$ := $filter_{not}(\overrightarrow{cand}, \varnothing)$
+  $\overrightarrow{cand}$ := $min(\overrightarrow{cand}, \mbox{\textsc{Satisfies}})$
+  if $|\overrightarrow{cand}| = 1$ then
+    return $first(head(\overrightarrow{cand}))$
+  else
+    raise "could not resolve"
+    \end{lstlisting}
+  \end{center}
+
+\begin{theorem}[Worst case time complexity for \textsc{Resolve}]
+  \label{thm:resolve_time_complexity}
+  For a context $ctx$, a string $name$, and arguments $\overrightarrow{arg}$, the number of time credits needed to execute \textsc{Resolve} is upper bounded by $11 + N_{ctx} + 14C + 11CA + 4CAS + C(8(2k+1) + (k+1)N_{props}S) + C^2(8(2k+1) + (k+1)kS)$.
+\end{theorem}
+  \begin{proof}
+    Line 2 scans the context for overloads of functions named $name$. This costs $2 + N_{ctx}$. Line 2 constructs a set of candidates from the overloads $\overrightarrow{f}$. The cost is at least $2 + C(14 + 11A + 4AS + 8(2k+1) + (k+1)N_{props}S)$ time credits. Filtering out failed candidates takes at least $2 + 2C$ time credits as it scans the candidates $\overrightarrow{cand}$.
+
+    The last stage attempts to disambiguate candidates by choosing the function with the strictest constraint. Using \textsc{Satisfies} as an order operator, this costs $2 + C^2(8(2k+1) + (k+1)kS)$. Note that $k$ appears in place of $|P|$ since each constraint is decomposed when compared. For example, $\mbox{\textsc{Satisfies}}(P_1 \wedge P_2, Q)$ is treated as $\mbox{\textsc{Satisfies}}(\{P_1, P_2 \}, Q)$. Yielding the result costs at most 5 time credits.
+
+    In total, the cost of \textsc{Resolve} is given by the function $f$ defined below.
+      \begin{align*}
+        f(N_{ctx}, N_{props}, S, C, A) = 11 &+ N_{ctx} \\
+          &+ 14C + 11CA + 4CAS + C(8(2k+1) + (k+1)N_{props}S) \\
+          &+ C^2(8(2k+1) + (k+1)kS)
+      \end{align*}
+  \end{proof}
+
+\subsection{Analysis of worst case time-complexity}
+
+\Cref{thm:resolve_time_complexity} informs demonstrates that the worst-case time complexity of \textsc{Resolve} is polynomial. However, it is difficult to intuit the types of bottle necks that arise in the algorithm since it is polynomial in 5 variables.
+
+In practice, arity $A$ is very small. In the Liz libraries constructed so far, the function with the greatest number of parameters is 6. Similarly, the complexity of function constraints is limited. In Arbiter, the constraint with the maximum number of top-level conjunctions $k$ is currently 3. Where the algorithm typically scales is in the size of types and constraints $S$, the length of the context in $N_{ctx}$ and $N_{props}$, and the size of overload sets. We will add that in our experience working with Arbiter, the number of propositions is typically smaller than 10, but, unlike arity, we do not have a good understanding of whether other applications will use such small number of assumptions.
+
+In treating $A$ and $k$ as constants, $f$ is $\vec{O}(N_{ctx} + C N_{props} S + C^2 S)$. This illustrates the three bottle necks in the \textsc{Resolve} algorithm in order of the terms: the lookup algorithm, typing each overload set against the arguments, and the final resolution phase that uses function constraints to select a best candidate.
